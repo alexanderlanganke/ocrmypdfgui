@@ -21,7 +21,7 @@ class ocrmypdf_batch:
 		#init variables
 		self.script_dir = os.path.dirname(os.path.realpath(__file__))
 		self.dir_path = StringVar()
-		self.dir_path.set("~")
+		self.dir_path.set("~/Documents")
 
 		#BUILD GUI MAIN WINDOW
 		root.geometry("%dx%d%+d%+d" % (500, 500,0,0))
