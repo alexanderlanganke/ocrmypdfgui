@@ -110,14 +110,20 @@ class ocrmypdf_batch:
 		try:
 			result = ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True)
 			self.text.insert("end", "OCR complete.\n")
+			root.update_idletasks()
+
 			print("OCR complete.\n")
 			return result
 		except ocrmypdf.exceptions.PriorOcrFoundError:
 			self.text.insert("end", "Prior OCR - Skipping\n")
+			root.update_idletasks()
+
 			print("Prior OCR - Skipping\n")
 			return "Error"
 		except ocrmypdf.exceptions.EncryptedPdfError:
 			self.text.insert("end", "PDF File is encrypted. Skipping.\n")
+			root.update_idletasks()
+
 			print("PDF File is encrypted. Skipping.\n")
 			return "Error"
 
@@ -129,6 +135,7 @@ class ocrmypdf_batch:
 	def batch_ocr(self, myParent, dir_path):
 		# walks through given path and uses OCR Function on every pdf in path
 		self.text.insert("1.0", "Starting. \n")
+		root.update_idletasks()
 
 		for dir_name, subdirs, file_list in os.walk(dir_path):
 			#self.text.insert("end", "Found directory:" + dir_name + "\n")
@@ -138,6 +145,8 @@ class ocrmypdf_batch:
 				if file_ext == '.pdf':
 					full_path = dir_name + '/' + filename
 					self.text.insert("end", "Path:" + full_path + "\n")
+					root.update_idletasks()
+
 					print("Path:" + full_path + "\n")
 					self.ocr_run(self, full_path)
 
