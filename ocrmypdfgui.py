@@ -13,14 +13,16 @@ import sys
 import ocrmypdf
 from tkinter import *
 from tkinter.filedialog import askdirectory
+from tkinter.filedialog import askopenfilename
 
 
 class ocrmypdf_batch:
 	def __init__(self, myParent):
 		#init variables
 		self.script_dir = os.path.dirname(os.path.realpath(__file__))
-		#self.dir_path = "/home/alexander/Documents"
-		self.dir_path = askdirectory()
+		self.dir_path = StringVar()
+		self.dir_path.set("~")
+
 		#BUILD GUI MAIN WINDOW
 		root.geometry("%dx%d%+d%+d" % (500, 500,0,0))
 		#MENUBAR
@@ -51,7 +53,7 @@ class ocrmypdf_batch:
 		self.container_percent = Frame(self.container_bar)
 		self.container_percent.pack(side=BOTTOM)
 
-		self.dir_path_label = Label(self.containerleft, text="Directory Path: '"+self.dir_path+"'")
+		self.dir_path_label = Label(self.containerleft, textvariable=self.dir_path)
 		self.dir_path_label.pack()
 		self.text = Text(self.containerbottom, undo = True, height = 20, width = 70)
 		self.text.pack(expand = True)
@@ -69,11 +71,17 @@ class ocrmypdf_batch:
 		#self.episode_box = Entry(self.containerright, textvariable=self.episode)
 		#self.episode_box.pack()
 
-		self.button1 = Button(self.containerbottom, text="Start Batch OCR Job", command=lambda: self.batch_ocr(self, self.dir_path) )
+		#Choose Path
+		self.button1 = Button(self.containerbottom, text="Choose Batch OCR Directory", command=lambda: self.choose_batch_directory(self, self.dir_path) )
 		self.button1.pack(side=LEFT)
 
-		#self.button2 = Button(self.containerbottom, text="Download Episode", command=lambda: self.download_episode(self, self.current_show, self.current_season, self.current_episode, self.accepted_hosters, self.accepted_hosters_url) )
-		#self.button2.pack(side=BOTTOM)
+		#Choose File
+		self.button2 = Button(self.containerbottom, text="Choose Single File", command=lambda: self.choose_file(self, self.dir_path) )
+		self.button2.pack(side=LEFT)
+
+		#Start OCR
+		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: self.batch_ocr(self, self.dir_path.get()) )
+		self.button3.pack(side=LEFT)
 
 		self.label_info = Label(self.container_bar, text="Idle")
 		self.label_info.pack(side=LEFT)
@@ -81,6 +89,21 @@ class ocrmypdf_batch:
 		#self.bar.pack()
 		#self.label_percent = Label(self.container_percent, text="")
 		#self.label_percent.pack(side=RIGHT)
+
+	def choose_batch_directory(self, myParent, dir_path):
+		#Runs Pathpicker and sets path variable
+		dir_path.set(askdirectory())
+		root.update_idletasks()
+		print ("test directory")
+		print(dir_path.get())
+
+	def choose_file(self, myParent, dir_path):
+		#Runs Filepicker and sets path variable
+		dir_path.set(askopenfilename())
+		root.update_idletasks()
+		print ("test filepicker")
+		print(dir_path.get())
+
 
 	def ocr_run(self, myParent, file_path):
 		#runs ocrmypdf on given file
