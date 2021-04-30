@@ -25,6 +25,7 @@ class ocrmypdfgui:
 		#MENUBAR
 		menubar = Menu(root)
 		filemenu = Menu(menubar, tearoff=0)
+		filemenu.add_command(label="Settings", command=lambda: self.open_setings())
 		filemenu.add_separator()
 		filemenu.add_command(label="Exit", command=root.quit)
 		menubar.add_cascade(label="File", menu=filemenu)
@@ -70,6 +71,15 @@ class ocrmypdfgui:
 		self.label_info = Label(self.container_bar, text="Idle")
 		self.label_info.pack(side=LEFT)
 
+	def open_setings(self):
+		settings=Toplevel(root) # Child window
+		settings.geometry("500x500")  # Size of the window
+		settings.title("Settings")
+
+		my_str1 = StringVar()
+		l1 = Label(settings,  textvariable=my_str1 )
+		l1.grid(row=1,column=2)
+		my_str1.set("Hi I am Child window")
 
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
