@@ -16,7 +16,7 @@ from tkinter.filedialog import askdirectory
 from tkinter.filedialog import askopenfilename
 
 
-class ocrmypdf_batch:
+class ocrmypdfgui:
 	def __init__(self, myParent):
 		#init variables
 		self.script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -137,21 +137,33 @@ class ocrmypdf_batch:
 		self.text.insert("1.0", "Starting. \n")
 		root.update_idletasks()
 
-		for dir_name, subdirs, file_list in os.walk(dir_path):
-			#self.text.insert("end", "Found directory:" + dir_name + "\n")
+		if(os.path.isfile(dir_path)==True):
+			#Run OCR on single file
+			file_ext = os.path.splitext(dir_path)[1]
+			if file_ext == '.pdf':
+				self.text.insert("end", "Path:" + dir_path + "\n")
+				root.update_idletasks()
 
-			for filename in file_list:
-				file_ext = os.path.splitext(filename)[1]
-				if file_ext == '.pdf':
-					full_path = dir_name + '/' + filename
-					self.text.insert("end", "Path:" + full_path + "\n")
-					root.update_idletasks()
+				print("Path:" + dir_path + "\n")
+				self.ocr_run(self, dir_path)
+		elif(os.path.isdir(dir_path)==True):
+			for dir_name, subdirs, file_list in os.walk(dir_path):
+				print(file_list)
+				#self.text.insert("end", "Found directory:" + dir_name + "\n")
 
-					print("Path:" + full_path + "\n")
-					self.ocr_run(self, full_path)
+				for filename in file_list:
+					file_ext = os.path.splitext(filename)[1]
+					if file_ext == '.pdf':
+						full_path = dir_name + '/' + filename
+						self.text.insert("end", "Path:" + full_path + "\n")
+						root.update_idletasks()
 
+						print("Path:" + full_path + "\n")
+						self.ocr_run(self, full_path)
+		else:
+			print("Error")
 
 root = Tk()
-root.title("OCR-MyPDF 0.1")
-ocrmypdf_batch = ocrmypdf_batch(root)
+root.title("ocrmypdfgui 0.1")
+ocrmypdfgui = ocrmypdfgui(root)
 root.mainloop()
