@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Original version by DeliciousPickle@github; modified
-
-# This script must be edited to meet your needs.
 
 import logging
 import warnings
@@ -58,19 +55,6 @@ class ocrmypdfgui:
 		self.text = Text(self.containerbottom, undo = True, height = 20, width = 70)
 		self.text.pack(expand = True)
 
-		#self.option = OptionMenu(self.containerright, self.show, "Choose Show", *self.show_options)
-		#self.option.pack()
-
-		#self.season_label = Label(self.containerleft, text="Season:")
-		#self.season_label.pack()
-		#self.season_box = Entry(self.containerright, textvariable=self.season)
-		#self.season_box.pack()
-
-		#self.episode_label = Label(self.containerleft, text="Episode:")
-		#self.episode_label.pack()
-		#self.episode_box = Entry(self.containerright, textvariable=self.episode)
-		#self.episode_box.pack()
-
 		#Choose Path
 		self.button1 = Button(self.containerbottom, text="Choose Batch OCR Directory", command=lambda: self.choose_batch_directory(self, self.dir_path) )
 		self.button1.pack(side=LEFT)
@@ -85,10 +69,7 @@ class ocrmypdfgui:
 
 		self.label_info = Label(self.container_bar, text="Idle")
 		self.label_info.pack(side=LEFT)
-		#self.bar = Progressbar(self.container_bar, orient ="horizontal",length = 200, mode ="determinate")
-		#self.bar.pack()
-		#self.label_percent = Label(self.container_percent, text="")
-		#self.label_percent.pack(side=RIGHT)
+
 
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
@@ -99,7 +80,7 @@ class ocrmypdfgui:
 
 	def choose_file(self, myParent, dir_path):
 		#Runs Filepicker and sets path variable
-		dir_path.set(askopenfilename())
+		dir_path.set(askopenfilename(filetypes=[("PDF files", ".pdf")]))
 		root.update_idletasks()
 		print ("test filepicker")
 		print(dir_path.get())
@@ -149,7 +130,6 @@ class ocrmypdfgui:
 		elif(os.path.isdir(dir_path)==True):
 			for dir_name, subdirs, file_list in os.walk(dir_path):
 				print(file_list)
-				#self.text.insert("end", "Found directory:" + dir_name + "\n")
 
 				for filename in file_list:
 					file_ext = os.path.splitext(filename)[1]
