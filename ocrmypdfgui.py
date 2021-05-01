@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+
+import subprocess
 import logging
 import warnings
 from PIL import Image
@@ -11,6 +13,7 @@ import ocrmypdf
 from tkinter import *
 from tkinter.filedialog import askdirectory
 from tkinter.filedialog import askopenfilename
+from tkinter.ttk import *
 
 
 class ocrmypdfgui:
@@ -19,13 +22,15 @@ class ocrmypdfgui:
 		self.script_dir = os.path.dirname(os.path.realpath(__file__))
 		self.dir_path = StringVar()
 		self.dir_path.set("~/Documents")
+		self.batch_progress = StringVar()
+		self.singlefile_progress = StringVar()
 
 		#BUILD GUI MAIN WINDOW
 		root.geometry("%dx%d%+d%+d" % (500, 500,0,0))
 		#MENUBAR
 		menubar = Menu(root)
 		filemenu = Menu(menubar, tearoff=0)
-		filemenu.add_command(label="Settings", command=lambda: self.open_setings())
+		filemenu.add_command(label="Settings", command=lambda: self.open_settings())
 		filemenu.add_separator()
 		filemenu.add_command(label="Exit", command=root.quit)
 		menubar.add_cascade(label="File", menu=filemenu)
@@ -45,11 +50,10 @@ class ocrmypdfgui:
 		self.containerright = Frame(self.containertop)
 		self.containerright.pack(side=RIGHT)
 
-		self.container_bar = Frame(self.containerbottom)
-		self.container_bar.pack(side=BOTTOM)
-
-		self.container_percent = Frame(self.container_bar)
-		self.container_percent.pack(side=BOTTOM)
+		self.container_bar_batch = Frame(self.containerbottom)
+		self.container_bar_batch.pack(side=BOTTOM)
+		self.container_bar_singlefile = Frame(self.containerbottom)
+		self.container_bar_singlefile.pack(side=BOTTOM)
 
 		self.dir_path_label = Label(self.containerleft, textvariable=self.dir_path)
 		self.dir_path_label.pack()
@@ -68,10 +72,19 @@ class ocrmypdfgui:
 		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: self.batch_ocr(self, self.dir_path.get()) )
 		self.button3.pack(side=LEFT)
 
-		self.label_info = Label(self.container_bar, text="Idle")
-		self.label_info.pack(side=LEFT)
+		#Progress
+		#Batch
+		self.progressbar_batch = Progressbar(self.container_bar_batch, orient="horizontal", length=100, mode="determinate")
+		self.progressbar_batch.pack(side=LEFT)
+		self.label_info_batch = Label(self.container_bar_batch, textvariable=self.batch_progress)
+		self.label_info_batch.pack(side=RIGHT)
+		#SingleFile
+		self.progressbar_singlefile = Progressbar(self.container_bar_singlefile, orient="horizontal", length=100, mode="determinate")
+		self.progressbar_singlefile.pack(side=LEFT)
+		self.label_info_singlefile = Label(self.container_bar_singlefile, textvariable=self.singlefile_progress)
+		self.label_info_singlefile.pack(side=RIGHT)
 
-	def open_setings(self):
+	def open_settings(self):
 		settings=Toplevel(root) # Child window
 		settings.geometry("500x500")  # Size of the window
 		settings.title("Settings")
@@ -79,7 +92,7 @@ class ocrmypdfgui:
 		my_str1 = StringVar()
 		l1 = Label(settings,  textvariable=my_str1 )
 		l1.grid(row=1,column=2)
-		my_str1.set("Hi I am Child window")
+		my_str1.set("Add all API Options for ocrmypdf here.")
 
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
@@ -95,11 +108,10 @@ class ocrmypdfgui:
 		print ("test filepicker")
 		print(dir_path.get())
 
-
 	def ocr_run(self, myParent, file_path):
 		#runs ocrmypdf on given file
 		try:
-			result = ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True)
+			subprocess.run(ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			self.text.insert("end", "OCR complete.\n")
 			root.update_idletasks()
 
@@ -126,6 +138,7 @@ class ocrmypdfgui:
 	def batch_ocr(self, myParent, dir_path):
 		# walks through given path and uses OCR Function on every pdf in path
 		self.text.insert("1.0", "Starting. \n")
+		self.batch_progress.set(0.0)
 		root.update_idletasks()
 
 		if(os.path.isfile(dir_path)==True):
@@ -137,7 +150,16 @@ class ocrmypdfgui:
 
 				print("Path:" + dir_path + "\n")
 				self.ocr_run(self, dir_path)
+				self.progressbar_batch['value'] = 100
 		elif(os.path.isdir(dir_path)==True):
+			number_of_files = 0
+			for dir_name, subdirs, file_list in os.walk(dir_path):
+				for filename in file_list:
+					file_ext = os.path.splitext(filename)[1]
+					if file_ext == '.pdf':
+						number_of_files=number_of_files+1
+
+			percent = 100/number_of_files
 			for dir_name, subdirs, file_list in os.walk(dir_path):
 				print(file_list)
 
@@ -150,8 +172,16 @@ class ocrmypdfgui:
 
 						print("Path:" + full_path + "\n")
 						self.ocr_run(self, full_path)
+						self.batch_progress.set(float(self.batch_progress.get())+percent)
+						self.progressbar_batch['value']=float(self.batch_progress.get())
+						root.update_idletasks()
+
 		else:
 			print("Error")
+			self.text.insert("Error\n")
+			root.update_idletasks()
+
+
 
 root = Tk()
 root.title("ocrmypdfgui 0.1")
