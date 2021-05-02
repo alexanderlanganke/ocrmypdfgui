@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-import subprocess
+import threading
 import logging
 import warnings
 from PIL import Image
@@ -24,6 +24,7 @@ class ocrmypdfgui:
 		self.dir_path.set("~/Documents")
 		self.batch_progress = StringVar()
 		self.singlefile_progress = StringVar()
+		self.ocrmypdfapioptions_bool = ["deskew", "clean"]
 
 		#BUILD GUI MAIN WINDOW
 		root.geometry("%dx%d%+d%+d" % (500, 500,0,0))
@@ -69,7 +70,7 @@ class ocrmypdfgui:
 		self.button2.pack(side=LEFT)
 
 		#Start OCR
-		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: self.batch_ocr(self, self.dir_path.get()) )
+		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: self.start_job(self, self.dir_path.get()) )
 		self.button3.pack(side=LEFT)
 
 		#Progress
@@ -93,7 +94,11 @@ class ocrmypdfgui:
 		l1 = Label(settings,  textvariable=my_str1 )
 		l1.grid(row=1,column=2)
 		my_str1.set("Add all API Options for ocrmypdf here.")
-
+		dynamic_widgets = []
+		for i in self.ocrmypdfapioptions_bool:
+		#	dynamic_widgets[i] = self.
+			#dynamically create widgets here
+			print(i)
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
 		dir_path.set(askdirectory())
@@ -108,10 +113,14 @@ class ocrmypdfgui:
 		print ("test filepicker")
 		print(dir_path.get())
 
+	def start_job(self, myParent, dir_path):
+		t = threading.Thread(target=self.batch_ocr, args=(self, dir_path))
+		t.start()
+
 	def ocr_run(self, myParent, file_path):
 		#runs ocrmypdf on given file
 		try:
-			subprocess.run(ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True)
 			self.text.insert("end", "OCR complete.\n")
 			root.update_idletasks()
 
