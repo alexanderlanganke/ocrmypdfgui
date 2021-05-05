@@ -10,6 +10,7 @@ warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 import os
 import sys
 import ocrmypdf
+import string
 from tkinter import *
 from tkinter.filedialog import askdirectory
 from tkinter.filedialog import askopenfilename
@@ -24,7 +25,10 @@ class ocrmypdfgui:
 		self.dir_path.set("~/Documents")
 		self.batch_progress = StringVar()
 		self.singlefile_progress = StringVar()
-		self.ocrmypdfapioptions_bool = ["deskew", "clean"]
+		self.ocrmypdfsettings = {}
+		self.ocrmypdfapioptions_bool = ["deskew", "clean"] # Instantiate list, fill with settings
+		self.ocrmypdfapioptions_optionsdict = {"lang": {0:"eng", 1:"deu", 2:"fr"}} #List options as dict
+		self.load_settings()
 
 		#BUILD GUI MAIN WINDOW
 		root.geometry("%dx%d%+d%+d" % (500, 500,0,0))
@@ -94,11 +98,69 @@ class ocrmypdfgui:
 		l1 = Label(settings,  textvariable=my_str1 )
 		l1.grid(row=1,column=2)
 		my_str1.set("Add all API Options for ocrmypdf here.")
-		dynamic_widgets = []
-		for i in self.ocrmypdfapioptions_bool:
-		#	dynamic_widgets[i] = self.
+		dynamic_widgets = {}
+		for i in range(len(self.ocrmypdfapioptions_bool)):
 			#dynamically create widgets here
 			print(i)
+			print(self.ocrmypdfapioptions_bool[i])
+			dynamic_widgets[i] = {}
+			#dynamic_widgets[i]["label"] = Label(settings, text=self.ocrmypdfapioptions_bool[i])
+			#dynamic_widgets[i]["label"].grid(row=i, column=2)
+			dynamic_widgets[i]["setting"] = IntVar()
+			dynamic_widgets[i]["checkbox"] = Checkbutton(settings, text=self.ocrmypdfapioptions_bool[i], variable=dynamic_widgets[i]["setting"])
+			dynamic_widgets[i]["checkbox"].grid(row=i, column=2)
+
+		for i in range(len(self.ocrmypdfapioptions_optionsdict)):
+			print(self.ocrmypdfapioptions_optionsdict[i])
+
+		savebutton = Button(settings, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
+		savebutton.grid(row=1)
+
+	def save_settings(self, w, dynamic_widgets):
+
+		print("Settings Saved")
+		w.destroy()
+
+	def load_settings(self):
+		print("Settings Loaded")
+
+		#Open Settings File
+		settings= os.path.join(os.path.dirname(__file__), 'settings.ini')
+		f = open(settings)
+		lines = f.read().splitlines()
+		f.close()
+
+		#Iterate over Settings and Import into Settings Dictionary
+
+		for items in lines:
+			temp_string = items.split('-:-')
+			if(temp_string[1] == "bool"):
+				try:
+					key = temp_string[0]
+					value = temp_string[2]
+					self.ocrmypdfsettings[key] = value
+				except:
+					print("nothing left to append")
+					traceback.print_exc(file=sys.stdout)
+			elif(temp_string[1] == "list"):
+				try:
+					key = temp_string[0]
+					value = temp_string[2]
+					self.ocrmypdfsettings[key] = []
+					list_split = value.split(',')
+					self.ocrmypdfsettings[key] = list_split
+
+				except:
+					print("nothing left to append")
+					traceback.print_exc(file=sys.stdout)
+			else:
+				print("Error loading Settings")
+
+			for value in self.ocrmypdfsettings:
+				print("Type of value" + str(type(key)))
+
+
+
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
 		dir_path.set(askdirectory())
@@ -114,7 +176,7 @@ class ocrmypdfgui:
 		print(dir_path.get())
 
 	def start_job(self, myParent, dir_path):
-		t = threading.Thread(target=self.batch_ocr, args=(self, dir_path))
+		t = threading.Thread(target=self.batch_ocr, args=(self, dir_path), daemon=True)
 		t.start()
 
 	def ocr_run(self, myParent, file_path):
