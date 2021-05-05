@@ -2,7 +2,6 @@
 
 
 import threading
-import logging
 import warnings
 from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -31,16 +30,16 @@ class ocrmypdfgui:
 		self.load_settings()
 
 		#BUILD GUI MAIN WINDOW
-		root.geometry("%dx%d%+d%+d" % (500, 500,0,0))
+		myParent.geometry("%dx%d%+d%+d" % (500, 500,0,0))
 		#MENUBAR
-		menubar = Menu(root)
+		menubar = Menu(myParent)
 		filemenu = Menu(menubar, tearoff=0)
-		filemenu.add_command(label="Settings", command=lambda: self.open_settings())
+		filemenu.add_command(label="Settings", command=lambda: self.open_settings(myParent))
 		filemenu.add_separator()
-		filemenu.add_command(label="Exit", command=root.quit)
+		filemenu.add_command(label="Exit", command=myParent.quit)
 		menubar.add_cascade(label="File", menu=filemenu)
 
-		root.config(menu=menubar)
+		myParent.config(menu=menubar)
 
 		#WINDOW
 		self.myContainer1 = Frame(myParent)
@@ -89,8 +88,8 @@ class ocrmypdfgui:
 		self.label_info_singlefile = Label(self.container_bar_singlefile, textvariable=self.singlefile_progress)
 		self.label_info_singlefile.pack(side=RIGHT)
 
-	def open_settings(self):
-		settings=Toplevel(root) # Child window
+	def open_settings(self, myParent):
+		settings=Toplevel(myParent) # Child window
 		settings.geometry("500x500")  # Size of the window
 		settings.title("Settings")
 
@@ -164,14 +163,14 @@ class ocrmypdfgui:
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
 		dir_path.set(askdirectory())
-		root.update_idletasks()
+		#root.update_idletasks()
 		print ("test directory")
 		print(dir_path.get())
 
 	def choose_file(self, myParent, dir_path):
 		#Runs Filepicker and sets path variable
 		dir_path.set(askopenfilename(filetypes=[("PDF files", ".pdf")]))
-		root.update_idletasks()
+		#self.update_idletasks()
 		print ("test filepicker")
 		print(dir_path.get())
 
@@ -184,19 +183,19 @@ class ocrmypdfgui:
 		try:
 			ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True)
 			self.text.insert("end", "OCR complete.\n")
-			root.update_idletasks()
+			#root.update_idletasks()
 
 			print("OCR complete.\n")
 			return result
 		except ocrmypdf.exceptions.PriorOcrFoundError:
 			self.text.insert("end", "Prior OCR - Skipping\n")
-			root.update_idletasks()
+			#root.update_idletasks()
 
 			print("Prior OCR - Skipping\n")
 			return "Error"
 		except ocrmypdf.exceptions.EncryptedPdfError:
 			self.text.insert("end", "PDF File is encrypted. Skipping.\n")
-			root.update_idletasks()
+			#root.update_idletasks()
 
 			print("PDF File is encrypted. Skipping.\n")
 			return "Error"
@@ -210,14 +209,14 @@ class ocrmypdfgui:
 		# walks through given path and uses OCR Function on every pdf in path
 		self.text.insert("1.0", "Starting. \n")
 		self.batch_progress.set(0.0)
-		root.update_idletasks()
+		#root.update_idletasks()
 
 		if(os.path.isfile(dir_path)==True):
 			#Run OCR on single file
 			file_ext = os.path.splitext(dir_path)[1]
 			if file_ext == '.pdf':
 				self.text.insert("end", "Path:" + dir_path + "\n")
-				root.update_idletasks()
+				#root.update_idletasks()
 
 				print("Path:" + dir_path + "\n")
 				self.ocr_run(self, dir_path)
@@ -239,22 +238,24 @@ class ocrmypdfgui:
 					if file_ext == '.pdf':
 						full_path = dir_name + '/' + filename
 						self.text.insert("end", "Path:" + full_path + "\n")
-						root.update_idletasks()
+						#root.update_idletasks()
 
 						print("Path:" + full_path + "\n")
 						self.ocr_run(self, full_path)
 						self.batch_progress.set(float(self.batch_progress.get())+percent)
 						self.progressbar_batch['value']=float(self.batch_progress.get())
-						root.update_idletasks()
+						#root.update_idletasks()
 
 		else:
 			print("Error")
 			self.text.insert("Error\n")
-			root.update_idletasks()
+			#root.update_idletasks()
 
+def main():
+    root = Tk()
+    root.title("ocrmypdfgui 0.1")
+    ocrmypdfgui(root)
+    root.mainloop()
 
-
-root = Tk()
-root.title("ocrmypdfgui 0.1")
-ocrmypdfgui = ocrmypdfgui(root)
-root.mainloop()
+if __name__ == '__main__':
+    main()
