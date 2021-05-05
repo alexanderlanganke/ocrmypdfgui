@@ -253,7 +253,7 @@ class ocrmypdfgui:
 
 def main():
     root = Tk()
-    root.title("ocrmypdfgui 0.1")
+    root.title("ocrmypdfgui")
     ocrmypdfgui(root)
     root.mainloop()
 
