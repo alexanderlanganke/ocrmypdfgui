@@ -16,7 +16,7 @@ if sys.version_info < (3, 9):
     sys.exit(1)
 
 #tests_require = open('requirements/test.txt', encoding='utf-8').read().splitlines()
-
+tests_require = ""
 
 def readme():
     with open('README.md', encoding='utf-8') as f:
