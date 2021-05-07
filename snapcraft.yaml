@@ -20,4 +20,4 @@ parts:
 
 apps:
   ocrmypdfgui:
-    command: /usr/local/bin/ocrmypdfgui
+    command: ocrmypdfgui
