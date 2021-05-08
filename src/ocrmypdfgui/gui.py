@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 
 
-import threading
-import warnings
-from PIL import Image
-warnings.simplefilter('ignore', Image.DecompressionBombWarning)
-
 import os
 import sys
-import ocrmypdf
 import string
+import ocr
 from tkinter import *
 from tkinter.filedialog import askdirectory
 from tkinter.filedialog import askopenfilename
@@ -73,7 +68,7 @@ class ocrmypdfgui:
 		self.button2.pack(side=LEFT)
 
 		#Start OCR
-		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: self.start_job(self, self.dir_path.get()) )
+		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: ocr.start_job(self.dir_path.get()) )
 		self.button3.pack(side=LEFT)
 
 		#Progress
@@ -174,90 +169,9 @@ class ocrmypdfgui:
 		print ("test filepicker")
 		print(dir_path.get())
 
-	def start_job(self, myParent, dir_path):
-		t = threading.Thread(target=self.batch_ocr, args=(self, dir_path), daemon=True)
-		t.start()
 
-	def ocr_run(self, myParent, file_path):
-		#runs ocrmypdf on given file
-		try:
-			ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True)
-			self.text.insert("end", "OCR complete.\n")
-			#root.update_idletasks()
-
-			print("OCR complete.\n")
-			return result
-		except ocrmypdf.exceptions.PriorOcrFoundError:
-			self.text.insert("end", "Prior OCR - Skipping\n")
-			#root.update_idletasks()
-
-			print("Prior OCR - Skipping\n")
-			return "Error"
-		except ocrmypdf.exceptions.EncryptedPdfError:
-			self.text.insert("end", "PDF File is encrypted. Skipping.\n")
-			#root.update_idletasks()
-
-			print("PDF File is encrypted. Skipping.\n")
-			return "Error"
-
-		except:
-			e = sys.exc_info()[0]
-			print(e)
-			return "Error"
-
-	def batch_ocr(self, myParent, dir_path):
-		# walks through given path and uses OCR Function on every pdf in path
-		self.text.insert("1.0", "Starting. \n")
-		self.batch_progress.set(0.0)
-		#root.update_idletasks()
-
-		if(os.path.isfile(dir_path)==True):
-			#Run OCR on single file
-			file_ext = os.path.splitext(dir_path)[1]
-			if file_ext == '.pdf':
-				self.text.insert("end", "Path:" + dir_path + "\n")
-				#root.update_idletasks()
-
-				print("Path:" + dir_path + "\n")
-				self.ocr_run(self, dir_path)
-				self.progressbar_batch['value'] = 100
-		elif(os.path.isdir(dir_path)==True):
-			number_of_files = 0
-			for dir_name, subdirs, file_list in os.walk(dir_path):
-				for filename in file_list:
-					file_ext = os.path.splitext(filename)[1]
-					if file_ext == '.pdf':
-						number_of_files=number_of_files+1
-
-			percent = 100/number_of_files
-			for dir_name, subdirs, file_list in os.walk(dir_path):
-				print(file_list)
-
-				for filename in file_list:
-					file_ext = os.path.splitext(filename)[1]
-					if file_ext == '.pdf':
-						full_path = dir_name + '/' + filename
-						self.text.insert("end", "Path:" + full_path + "\n")
-						#root.update_idletasks()
-
-						print("Path:" + full_path + "\n")
-						self.ocr_run(self, full_path)
-						self.batch_progress.set(float(self.batch_progress.get())+percent)
-						self.progressbar_batch['value']=float(self.batch_progress.get())
-						#root.update_idletasks()
-
-		else:
-			print("Error")
-			self.text.insert("Error\n")
-			#root.update_idletasks()
-
-def main(args=None):
-	if args is None:
-		args = sys.argv[1:]
+def run():
 	root = Tk()
 	root.title("ocrmypdfgui")
 	ocrmypdfgui(root)
 	root.mainloop()
-
-if __name__ == '__main__':
-	sys.exit(main())
