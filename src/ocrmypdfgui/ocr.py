@@ -9,7 +9,7 @@ import warnings
 from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
-
+#test
 def start_job(dir_path):
 	t = threading.Thread(target=batch_ocr, args=(dir_path,), daemon=True)
 	t.start()
