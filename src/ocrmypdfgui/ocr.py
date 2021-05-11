@@ -5,6 +5,7 @@ import os
 import sys
 import threading
 import warnings
+import plugin_progressbar
 
 from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -18,7 +19,7 @@ def start_job(dir_path):
 def ocr_run(file_path):
 	#runs ocrmypdf on given file
 	try:
-		ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True)
+		ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True, plugins="plugin_progressbar.py")
 
 		print("OCR complete.\n")
 		return "end", "OCR complete.\n"
