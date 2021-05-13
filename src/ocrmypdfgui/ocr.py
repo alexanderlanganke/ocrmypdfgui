@@ -38,6 +38,7 @@ def ocr_run(file_path):
 def batch_ocr(dir_path, progressbar_batch):
 	# walks through given path and uses OCR Function on every pdf in path
 	progressbar_batch.set(0.0)	#resets Progressbar
+	progress_precision = 0.0
 
 	if(os.path.isfile(dir_path)==True):
 		#Run OCR on single file
@@ -66,7 +67,8 @@ def batch_ocr(dir_path, progressbar_batch):
 
 					print("Path:" + full_path + "\n")
 					ocr_run(full_path)
-					progressbar_batch.set(float(progressbar_batch.get()) + percent)
+					progress_precision = progress_precision + percent
+					progressbar_batch.set(round(progress_precision))
 
 	else:
 		print("Error")
