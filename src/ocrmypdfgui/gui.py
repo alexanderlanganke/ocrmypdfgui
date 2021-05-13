@@ -18,6 +18,7 @@ class ocrmypdfgui:
 		self.dir_path = StringVar()
 		self.dir_path.set("~/Documents")
 		self.batch_progress = StringVar()
+		self.batch_progress.set(0.0)
 		self.singlefile_progress = StringVar()
 		self.ocrmypdfsettings = {}
 		self.ocrmypdfapioptions_bool = ["deskew", "clean"] # Instantiate list, fill with settings
@@ -68,15 +69,16 @@ class ocrmypdfgui:
 		self.button2.pack(side=LEFT)
 
 		#Start OCR
-		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: ocr.start_job(self.dir_path.get()) )
+		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: ocr.start_job(self.dir_path.get(), self.batch_progress) )
 		self.button3.pack(side=LEFT)
 
 		#Progress
 		#Batch
-		self.progressbar_batch = Progressbar(self.container_bar_batch, orient="horizontal", length=100, mode="determinate")
+		self.progressbar_batch = Progressbar(self.container_bar_batch, orient="horizontal", length=100, mode="determinate", variable=self.batch_progress)
 		self.progressbar_batch.pack(side=LEFT)
 		self.label_info_batch = Label(self.container_bar_batch, textvariable=self.batch_progress)
 		self.label_info_batch.pack(side=RIGHT)
+
 		#SingleFile
 		self.progressbar_singlefile = Progressbar(self.container_bar_singlefile, orient="horizontal", length=100, mode="determinate")
 		self.progressbar_singlefile.pack(side=LEFT)
@@ -168,6 +170,7 @@ class ocrmypdfgui:
 		#self.update_idletasks()
 		print ("test filepicker")
 		print(dir_path.get())
+
 
 
 def run():
