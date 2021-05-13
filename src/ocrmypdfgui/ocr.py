@@ -5,6 +5,7 @@ import os
 import sys
 import threading
 import warnings
+import inspect
 
 from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
@@ -72,3 +73,19 @@ def batch_ocr(dir_path, progressbar_batch):
 
 	else:
 		print("Error")
+
+
+def get_api_options():
+	sig = inspect.signature(ocrmypdf.ocr)
+	#print (str(sig))
+	dict = {}
+	for param in sig.parameters.values():
+	    if (param.kind == param.KEYWORD_ONLY):
+	        #print(param.name)
+	        #print(param.annotation)
+	        if str(param.annotation)[8:-2] == "bool" or str(param.annotation)[8:-2] == "int" or str(param.annotation)[8:-2] == "float" or str(param.annotation)[8:-2] == "str":
+	            dict[param.name] = str(param.annotation)[8:-2]
+
+	for k, v in dict.items():
+	    print(k + " " + v)
+	return dict	

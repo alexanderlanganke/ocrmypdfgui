@@ -21,12 +21,13 @@ class ocrmypdfgui:
 		self.batch_progress.set(0.0)
 		self.singlefile_progress = StringVar()
 		self.ocrmypdfsettings = {}
+		self.ocrmypdfapioptions = ocr.get_api_options()
 		self.ocrmypdfapioptions_bool = ["deskew", "clean"] # Instantiate list, fill with settings
 		self.ocrmypdfapioptions_optionsdict = {"lang": {0:"eng", 1:"deu", 2:"fr"}} #List options as dict
 		self.load_settings()
 
 		#BUILD GUI MAIN WINDOW
-		myParent.geometry("%dx%d%+d%+d" % (500, 500,0,0))
+		#myParent.geometry("%dx%d%+d%+d" % (500, 500,0,0))
 		#MENUBAR
 		menubar = Menu(myParent)
 		filemenu = Menu(menubar, tearoff=0)
@@ -57,8 +58,8 @@ class ocrmypdfgui:
 
 		self.dir_path_label = Label(self.containerleft, textvariable=self.dir_path)
 		self.dir_path_label.pack()
-		self.text = Text(self.containerbottom, undo = True, height = 20, width = 70)
-		self.text.pack(expand = True)
+		#self.text = Text(self.containerbottom, undo = True, height = 20, width = 70)
+		#self.text.pack(expand = True)
 
 		#Choose Path
 		self.button1 = Button(self.containerbottom, text="Choose Batch OCR Directory", command=lambda: self.choose_batch_directory(self, self.dir_path) )
@@ -77,8 +78,9 @@ class ocrmypdfgui:
 		self.progressbar_batch = Progressbar(self.container_bar_batch, orient="horizontal", length=100, mode="determinate", variable=self.batch_progress)
 		self.progressbar_batch.pack(side=LEFT)
 		self.label_info_batch = Label(self.container_bar_batch, textvariable=self.batch_progress)
-		self.label_info_batch.pack(side=RIGHT)
-
+		self.label_info_batch.pack(side=LEFT)
+		self.label_info_batch_percent= Label(self.container_bar_batch, text="%")
+		self.label_info_batch_percent.pack(side=RIGHT)
 		#SingleFile
 		self.progressbar_singlefile = Progressbar(self.container_bar_singlefile, orient="horizontal", length=100, mode="determinate")
 		self.progressbar_singlefile.pack(side=LEFT)
@@ -87,30 +89,28 @@ class ocrmypdfgui:
 
 	def open_settings(self, myParent):
 		settings=Toplevel(myParent) # Child window
-		settings.geometry("500x500")  # Size of the window
+		#settings.geometry("200x200")  # Size of the window
 		settings.title("Settings")
+		myContainer2 = Frame(settings)
+		myContainer2.pack()
 
-		my_str1 = StringVar()
-		l1 = Label(settings,  textvariable=my_str1 )
-		l1.grid(row=1,column=2)
-		my_str1.set("Add all API Options for ocrmypdf here.")
 		dynamic_widgets = {}
-		for i in range(len(self.ocrmypdfapioptions_bool)):
+		#i=1
+		for k, v in self.ocrmypdfapioptions.items():
 			#dynamically create widgets here
-			print(i)
-			print(self.ocrmypdfapioptions_bool[i])
-			dynamic_widgets[i] = {}
-			#dynamic_widgets[i]["label"] = Label(settings, text=self.ocrmypdfapioptions_bool[i])
-			#dynamic_widgets[i]["label"].grid(row=i, column=2)
-			dynamic_widgets[i]["setting"] = IntVar()
-			dynamic_widgets[i]["checkbox"] = Checkbutton(settings, text=self.ocrmypdfapioptions_bool[i], variable=dynamic_widgets[i]["setting"])
-			dynamic_widgets[i]["checkbox"].grid(row=i, column=2)
+			if v == "bool":
+				dynamic_widgets[k] = Checkbutton(myContainer2, text=k)#settings, text=k, variable=dynamic_widgets[i]["setting"])
+				dynamic_widgets[k].pack()
+				#i=i+1
+		for k, v in self.ocrmypdfapioptions.items():
+				#dynamically create widgets here
+			if v == "str":
+				dynamic_widgets[k] = Entry(myContainer2)#settings, text=k, variable=dynamic_widgets[i]["setting"])
+				dynamic_widgets[k].insert(0, k)
+				dynamic_widgets[k].pack()
 
-		for i in range(len(self.ocrmypdfapioptions_optionsdict)):
-			print(self.ocrmypdfapioptions_optionsdict[i])
-
-		savebutton = Button(settings, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
-		savebutton.grid(row=1)
+		savebutton = Button(myContainer2, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
+		savebutton.pack()
 
 	def save_settings(self, w, dynamic_widgets):
 
