@@ -11,14 +11,14 @@ from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
 
-def start_job(dir_path, progressbar_batch):
-	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch,), daemon=True)
+def start_job(dir_path, progressbar_batch, ocrmypdfsettings):
+	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, ocrmypdfsettings), daemon=True)
 	t.start()
 
-def ocr_run(file_path):
+def ocr_run(file_path, ocrmypdfsettings):
 	#runs ocrmypdf on given file
 	try:
-		ocr = ocrmypdf.ocr(file_path, file_path, clean=True, language="deu+eng", deskew=True, plugins=["plugin_progressbar.py"])
+		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar.py"])
 
 		print("OCR complete.\n")
 		return "end", "OCR complete.\n"
@@ -31,12 +31,15 @@ def ocr_run(file_path):
 		print("PDF File is encrypted. Skipping.\n")
 		return "PDF File is encrypted. Skipping.\n"
 
+	except ocrmypdf.exceptions.BadArgsError:
+		print("Bad arguments.")
+
 	except:
 		e = sys.exc_info()[0]
 		print(e)
 		return "Error"
 
-def batch_ocr(dir_path, progressbar_batch):
+def batch_ocr(dir_path, progressbar_batch, ocrmypdfsettings):
 	# walks through given path and uses OCR Function on every pdf in path
 	progressbar_batch.set(0.0)	#resets Progressbar
 	progress_precision = 0.0
@@ -47,7 +50,7 @@ def batch_ocr(dir_path, progressbar_batch):
 		if file_ext == '.pdf':
 
 			print("Path:" + dir_path + "\n")
-			ocr_run(dir_path)
+			ocr_run(dir_path, ocrmypdfsettings)
 			progressbar_batch.set(100)
 	elif(os.path.isdir(dir_path)==True):
 		number_of_files = 0
@@ -67,7 +70,7 @@ def batch_ocr(dir_path, progressbar_batch):
 					full_path = dir_name + '/' + filename
 
 					print("Path:" + full_path + "\n")
-					ocr_run(full_path)
+					ocr_run(full_path, ocrmypdfsettings)
 					progress_precision = progress_precision + percent
 					progressbar_batch.set(round(progress_precision))
 
@@ -86,6 +89,4 @@ def get_api_options():
 	        if str(param.annotation)[8:-2] == "bool" or str(param.annotation)[8:-2] == "int" or str(param.annotation)[8:-2] == "float" or str(param.annotation)[8:-2] == "str":
 	            dict[param.name] = str(param.annotation)[8:-2]
 
-	for k, v in dict.items():
-	    print(k + " " + v)
-	return dict	
+	return dict
