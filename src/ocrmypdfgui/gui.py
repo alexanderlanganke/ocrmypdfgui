@@ -110,19 +110,18 @@ class ocrmypdfgui:
 					dynamic_widgets[k]["value"].set(self.ocrmypdfsettings[k])
 
 
-#		for k, v in self.ocrmypdfapioptions.items():
-#				#dynamically create widgets here
-#			if v == "str":
-#				dynamic_widgets[k] = {}
-#				dynamic_widgets[k]["value"] = StringVar()
-#				dynamic_widgets[k]["widget"] = Entry(myContainer2, textvariable=dynamic_widgets[k]["value"])
-#				dynamic_widgets[k]["value"].set(k)
-#				dynamic_widgets[k]["widget"].pack()
-#				dynamic_widgets[k]["type"] = "str"
-#
-#
-#				if self.ocrmypdfsettings.get(k) is True:
-#					dynamic_widgets[k]["value"].set(self.ocrmypdfsettings[k])
+		for k, v in self.ocrmypdfapioptions.items():
+				#dynamically create widgets here
+			if v == "str" and k != "keywords" and k != "unpaper_args" and k != "pages":
+				dynamic_widgets[k] = {}
+				dynamic_widgets[k]["value"] = StringVar()
+				dynamic_widgets[k]["widget"] = Entry(myContainer2, textvariable=dynamic_widgets[k]["value"])
+				dynamic_widgets[k]["value"].set(k)
+				dynamic_widgets[k]["widget"].pack()
+				dynamic_widgets[k]["type"] = "str"
+
+				if self.ocrmypdfsettings.get(k):
+					dynamic_widgets[k]["value"].set(self.ocrmypdfsettings[k])
 
 		savebutton = Button(myContainer2, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
 		savebutton.pack()
