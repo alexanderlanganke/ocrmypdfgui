@@ -116,10 +116,11 @@ class ocrmypdfgui:
 				dynamic_widgets[k] = {}
 				dynamic_widgets[k]["value"] = StringVar()
 				dynamic_widgets[k]["widget"] = Entry(myContainer2, textvariable=dynamic_widgets[k]["value"])
-				dynamic_widgets[k]["value"].set(k)
+				dynamic_widgets[k]["value"].set("")
 				dynamic_widgets[k]["widget"].pack()
 				dynamic_widgets[k]["type"] = "str"
-
+				dynamic_widgets[k]["label"] = Label(myContainer2, text=k)
+				dynamic_widgets[k]["label"].pack()
 				if self.ocrmypdfsettings.get(k):
 					dynamic_widgets[k]["value"].set(self.ocrmypdfsettings[k])
 
