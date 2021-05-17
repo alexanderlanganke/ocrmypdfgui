@@ -3,7 +3,6 @@ import threading
 import ocrmypdf
 import os
 import sys
-import threading
 import warnings
 import inspect
 
@@ -18,7 +17,8 @@ def start_job(dir_path, progressbar_batch, ocrmypdfsettings):
 def ocr_run(file_path, ocrmypdfsettings):
 	#runs ocrmypdf on given file
 	try:
-		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar.py"])
+
+		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
 
 		print("OCR complete.\n")
 		return "end", "OCR complete.\n"

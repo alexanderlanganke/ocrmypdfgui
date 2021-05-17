@@ -4,7 +4,7 @@
 import os
 import sys
 import string
-import ocr
+import ocrmypdfgui.ocr as ocr
 import json
 from tkinter import *
 from tkinter.filedialog import askdirectory
@@ -17,13 +17,12 @@ class ocrmypdfgui:
 		#init variables
 		self.script_dir = os.path.dirname(os.path.realpath(__file__))
 		self.dir_path = StringVar()
-		self.dir_path.set("~/Documents")
+		self.dir_path.set("")
 		self.batch_progress = StringVar()
 		self.batch_progress.set(0.0)
 		self.singlefile_progress = StringVar()
 		self.ocrmypdfsettings = {}
 		self.load_settings()
-		print(self.ocrmypdfsettings)
 		self.ocrmypdfapioptions = ocr.get_api_options()
 
 

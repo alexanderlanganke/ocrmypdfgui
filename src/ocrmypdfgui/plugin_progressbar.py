@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import ocrmypdf
+from ocrmypdf import hookimpl
 
-class ocrmypdf_progressbar_singlefile():
+class ocrmypdf_progressbar_singlefile:
 
     def __init__(self, **kwargs):
         print("initialized progressbar_singlefile")
@@ -17,10 +17,11 @@ class ocrmypdf_progressbar_singlefile():
         return False
 
     def update(self, _arg=None):
-        print("Updating")        
+        print("Updating")
         return
 
 
-@ocrmypdf.hookimpl
+@hookimpl
 def get_progressbar_class():
+    print("Hook activated")
     return ocrmypdf_progressbar_singlefile
