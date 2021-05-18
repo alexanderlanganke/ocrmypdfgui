@@ -21,3 +21,4 @@ parts:
 apps:
   ocrmypdfgui:
     command: bin/ocrmypdfgui
+    adapter: none
