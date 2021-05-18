@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.1.1",
     author="Alexander Langanke",
     author_email="alexlanganke@gmail.com",
-    description="Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow",
+    description="Hobby Project GUI for the Python Program 'OCRmyPDF' by James R. Barlow",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/alexanderlanganke/ocrmypdfgui",
