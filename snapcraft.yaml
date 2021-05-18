@@ -20,4 +20,4 @@ parts:
 
 apps:
   ocrmypdfgui:
-    command: root/prime/lib/python3.8/site-packages/ocrmypdfgui/
+    command: bin/ocrmypdfgui
