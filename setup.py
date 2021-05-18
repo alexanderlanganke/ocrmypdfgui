@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="alexanderlanganke", # Replace with your own username
+    name="ocrmypdfgui",
     version="0.1.1",
     author="Alexander Langanke",
     author_email="alexlanganke@gmail.com",
