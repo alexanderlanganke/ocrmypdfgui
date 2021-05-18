@@ -20,4 +20,4 @@ parts:
 
 apps:
   ocrmypdfgui:
-    command: ocrmypdfgui
+    command: $SNAP/usr/bin/ocrmypdfgui
