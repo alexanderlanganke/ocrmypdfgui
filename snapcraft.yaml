@@ -20,4 +20,4 @@ parts:
 
 apps:
   ocrmypdfgui:
-    command: $SNAP/usr/bin/ocrmypdfgui
+    command: root/prime/lib/python3.8/site-packages/ocrmypdfgui/
