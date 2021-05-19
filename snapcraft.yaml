@@ -12,6 +12,7 @@ parts:
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
+    python-version: python3
     #python-version: python3
     source: .
     stage-packages:
@@ -20,5 +21,5 @@ parts:
 
 apps:
   ocrmypdfgui:
-    command: bin/ocrmypdfgui
+    command: bin/python3 bin/ocrmypdfgui
     adapter: none
