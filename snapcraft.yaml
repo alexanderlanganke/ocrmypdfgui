@@ -12,7 +12,6 @@ parts:
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
-    #python-version: python3
     source: .
     stage-packages:
       - ocrmypdf
@@ -20,5 +19,6 @@ parts:
 
 apps:
   ocrmypdfgui:
-    command: bin/python3 bin/ocrmypdfgui
+    command: $SNAP/ocrmypdfgui/current/bin
     adapter: none
+    plugs: ['home','removable-media','network','network-bind']
