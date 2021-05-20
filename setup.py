@@ -36,6 +36,6 @@ setuptools.setup(
         'tqdm >= 4',
         'ocrmypdf'
     ],
-    entry_points={'console_scripts': ['ocrmypdfgui = ocrmypdfgui.__main__:main', 'ocrmypdf = ocrmypdfgui_progressbar = ocrmypdfgui.plugin_progressbar']},
+    entry_points={'gui_scripts': ['ocrmypdfgui = ocrmypdfgui.__main__:main'], 'console-scripts': ['ocrmypdf = ocrmypdfgui.plugin_progressbar:get_progressbar_class']},
 
 )
