@@ -36,6 +36,6 @@ setuptools.setup(
         'tqdm >= 4',
         'ocrmypdf'
     ],
-    entry_points={'gui_scripts': ['ocrmypdfgui = ocrmypdfgui.__main__:main']},
+    entry_points={'console_scripts': ['ocrmypdfgui = ocrmypdfgui.__main__:main']},
 
 )
