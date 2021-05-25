@@ -18,7 +18,7 @@ def ocr_run(file_path, ocrmypdfsettings):
 	#runs ocrmypdf on given file
 	try:
 
-		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
+		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar"])
 
 		print("OCR complete.\n")
 		return "end", "OCR complete.\n"
