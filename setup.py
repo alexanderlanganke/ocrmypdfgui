@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="ocrmypdfgui",
-    version="0.1.4",
+    version="0.1.5",
     author="Alexander Langanke",
     author_email="alexlanganke@gmail.com",
     description="Hobby Project GUI for the Python Program 'OCRmyPDF' by James R. Barlow",
@@ -34,7 +34,8 @@ setuptools.setup(
         'reportlab >= 3.5.66',
         'setuptools',
         'tqdm >= 4',
-        'ocrmypdf'
+        'ocrmypdf',
+        'tk'
     ],
     entry_points={'console_scripts': ['ocrmypdfgui = ocrmypdfgui.__main__:main']},
 
