@@ -146,28 +146,29 @@ class ocrmypdfgui:
 		#w.destroy()
 
 	def load_settings(self):
-		print("Settings Loaded")
-
+		print("Open Load Settings function")
+		print(os.path.join(os.path.dirname(__file__)))
 		#Open Settings File
 		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
 			print("Settings found")
 			with open(os.path.join(os.path.dirname(__file__), 'settings.ini')) as f:
 				self.ocrmypdfsettings = json.load(f)
+			print("Settings Loaded")
+
 		else:
+			print("Settings not found")
 			pass
 
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
 		dir_path.set(askdirectory())
 		#root.update_idletasks()
-		print ("test directory")
 		print(dir_path.get())
 
 	def choose_file(self, myParent, dir_path):
 		#Runs Filepicker and sets path variable
 		dir_path.set(askopenfilename(filetypes=[("PDF files", ".pdf")]))
 		#self.update_idletasks()
-		print ("test filepicker")
 		print(dir_path.get())
 
 
