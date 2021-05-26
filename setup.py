@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="ocrmypdfgui",
-    version="0.1.7",
+    version="0.1.8",
     author="Alexander Langanke",
     author_email="alexlanganke@gmail.com",
     description="Hobby Project GUI for the Python Program 'OCRmyPDF' by James R. Barlow",
