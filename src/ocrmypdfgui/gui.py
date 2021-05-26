@@ -4,7 +4,8 @@
 import os
 import sys
 import string
-import ocrmypdfgui.ocr as ocr
+from ocr import start_job
+from ocr import get_api_options
 import json
 from tkinter import *
 from tkinter.filedialog import askdirectory
@@ -23,7 +24,7 @@ class ocrmypdfgui:
 		self.singlefile_progress = StringVar()
 		self.ocrmypdfsettings = {}
 		self.load_settings()
-		self.ocrmypdfapioptions = ocr.get_api_options()
+		self.ocrmypdfapioptions = get_api_options()
 
 
 		#BUILD GUI MAIN WINDOW
@@ -70,7 +71,7 @@ class ocrmypdfgui:
 		self.button2.pack(side=LEFT)
 
 		#Start OCR
-		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: ocr.start_job(self.dir_path.get(), self.batch_progress, self.ocrmypdfsettings) )
+		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: start_job(self.dir_path.get(), self.batch_progress, self.ocrmypdfsettings) )
 		self.button3.pack(side=LEFT)
 
 		#Progress
@@ -146,8 +147,6 @@ class ocrmypdfgui:
 		#w.destroy()
 
 	def load_settings(self):
-		print("Open Load Settings function")
-		print(os.path.join(os.path.dirname(__file__)))
 		#Open Settings File
 		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
 			print("Settings found")

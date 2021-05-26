@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import sys
-import ocrmypdfgui.gui
+from gui import run
 
 def main(args=None):
 	if args is None:
 		args = sys.argv[1:]
-	ocrmypdfgui.gui.run()
+		run()
 
 if __name__ == '__main__':
 	sys.exit(main())
