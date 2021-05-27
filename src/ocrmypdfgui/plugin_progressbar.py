@@ -6,7 +6,12 @@ class ocrmypdf_progressbar_singlefile:
 
     def __init__(self, **kwargs):
         print("initialized progressbar_singlefile")
-
+        print(kwargs)
+        print(kwargs['total'])
+        #print(kwargs['desc'])
+        #print(kwargs['unit'])
+        #print(100/kwargs['total'])
+        self.total = kwargs['total']
 
     def __enter__(self):
         print("Entering Progressbar")
@@ -18,6 +23,8 @@ class ocrmypdf_progressbar_singlefile:
 
     def update(self, _arg=None):
         print("Updating")
+        print(self.total)
+        #singlefile_progress.set(singlefile_progress.get()+self.total)
         return
 
 

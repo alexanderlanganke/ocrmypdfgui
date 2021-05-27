@@ -22,6 +22,7 @@ class ocrmypdfgui:
 		self.batch_progress = StringVar()
 		self.batch_progress.set(0.0)
 		self.singlefile_progress = StringVar()
+		self.singlefile_progress.set(0.0)
 		self.ocrmypdfsettings = {}
 		self.load_settings()
 		self.ocrmypdfapioptions = get_api_options()
