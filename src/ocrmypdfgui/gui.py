@@ -6,6 +6,7 @@ import sys
 import string
 from ocr import start_job
 from ocr import get_api_options
+from plugin_progressbar import ocrmypdf_progressbar_singlefile
 import json
 from tkinter import *
 from tkinter.filedialog import askdirectory
@@ -88,6 +89,16 @@ class ocrmypdfgui:
 		self.progressbar_singlefile.pack(side=LEFT)
 		self.label_info_singlefile = Label(self.container_bar_singlefile, textvariable=self.singlefile_progress)
 		self.label_info_singlefile.pack(side=RIGHT)
+
+		def increment_progress_bar(self, args):
+			print("increment_progress_bar")
+			print(self)
+			print(args['total'])
+
+			self.singlefile_progress.set(float(args['total']))
+			#self.singlefile_progress.set(float(self.singlefile_progress.get())+1)
+
+		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar)
 
 	def open_settings(self, myParent):
 		settings=Toplevel(myParent) # Child window

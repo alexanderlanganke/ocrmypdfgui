@@ -5,13 +5,16 @@ from ocrmypdf import hookimpl
 class ocrmypdf_progressbar_singlefile:
 
     def __init__(self, **kwargs):
+        callback = None
         print("initialized progressbar_singlefile")
         print(kwargs)
         print(kwargs['total'])
-        #print(kwargs['desc'])
-        #print(kwargs['unit'])
-        #print(100/kwargs['total'])
-        self.total = kwargs['total']
+        self.args = kwargs
+
+    @classmethod
+    def set_callback(cls, cb):
+        print("set_callback")
+        cls.callback = cb
 
     def __enter__(self):
         print("Entering Progressbar")
@@ -23,8 +26,7 @@ class ocrmypdf_progressbar_singlefile:
 
     def update(self, _arg=None):
         print("Updating")
-        print(self.total)
-        #singlefile_progress.set(singlefile_progress.get()+self.total)
+        self.callback(self.args)
         return
 
 
