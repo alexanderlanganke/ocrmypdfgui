@@ -26,6 +26,7 @@ class ocrmypdfgui:
 		self.singlefile_progress.set(0.0)
 		self.singlefile_progress_info = StringVar()
 		self.singlefile_progress_info.set("Idle")
+		self.currentfile = StringVar()
 		self.ocrmypdfsettings = {}
 		self.load_settings()
 		self.ocrmypdfapioptions = get_api_options()
@@ -50,6 +51,8 @@ class ocrmypdfgui:
 		self.containertop.pack(side=TOP)
 		self.containerbottom = Frame(self.myContainer1)
 		self.containerbottom.pack(side=BOTTOM)
+		self.containerinfo = Frame(self.myContainer1)
+		self.containerinfo.pack(side=BOTTOM)
 
 		self.containerleft = Frame(self.containertop)
 		self.containerleft.pack(side=LEFT)
@@ -75,8 +78,10 @@ class ocrmypdfgui:
 		self.button2.pack(side=LEFT)
 
 		#Start OCR
-		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: start_job(self.dir_path.get(), self.batch_progress, self.singlefile_progress, self.ocrmypdfsettings) )
+		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: start_job(self.dir_path.get(), self.currentfile, self.batch_progress, self.singlefile_progress, self.ocrmypdfsettings) )
 		self.button3.pack(side=LEFT)
+		self.label_currentfile = Label(self.containerinfo, textvariable=self.currentfile)
+		self.label_currentfile.pack(side=BOTTOM)
 
 		#Progress
 		#Batch
