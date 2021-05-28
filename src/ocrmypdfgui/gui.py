@@ -24,6 +24,8 @@ class ocrmypdfgui:
 		self.batch_progress.set(0.0)
 		self.singlefile_progress = StringVar()
 		self.singlefile_progress.set(0.0)
+		self.singlefile_progress_info = StringVar()
+		self.singlefile_progress_info.set("Idle")
 		self.ocrmypdfsettings = {}
 		self.load_settings()
 		self.ocrmypdfapioptions = get_api_options()
@@ -73,7 +75,7 @@ class ocrmypdfgui:
 		self.button2.pack(side=LEFT)
 
 		#Start OCR
-		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: start_job(self.dir_path.get(), self.batch_progress, self.ocrmypdfsettings) )
+		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: start_job(self.dir_path.get(), self.batch_progress, self.singlefile_progress, self.ocrmypdfsettings) )
 		self.button3.pack(side=LEFT)
 
 		#Progress
@@ -85,20 +87,30 @@ class ocrmypdfgui:
 		self.label_info_batch_percent= Label(self.container_bar_batch, text="%")
 		self.label_info_batch_percent.pack(side=RIGHT)
 		#SingleFile
-		self.progressbar_singlefile = Progressbar(self.container_bar_singlefile, orient="horizontal", length=100, mode="determinate")
+		self.progressbar_singlefile = Progressbar(self.container_bar_singlefile, orient="horizontal", length=100, mode="determinate", variable=self.singlefile_progress)
 		self.progressbar_singlefile.pack(side=LEFT)
-		self.label_info_singlefile = Label(self.container_bar_singlefile, textvariable=self.singlefile_progress)
+		self.label_info_singlefile = Label(self.container_bar_singlefile, textvariable=self.singlefile_progress_info)
 		self.label_info_singlefile.pack(side=RIGHT)
 
-		def increment_progress_bar(self, args):
+		def increment_progress_bar(self, args, singlefile_progress, singlefile_progress_info):
 			print("increment_progress_bar")
-			print(self)
 			print(args['total'])
+			if args['desc'] == "OCR":
+				print("OCR Running")
+				percent = float(args['unit_scale']) * 100
+				print(percent)
+				precision = float(singlefile_progress.get()) + percent
+				singlefile_progress_info.set("OCR Running")
 
-			self.singlefile_progress.set(float(args['total']))
+				singlefile_progress.set(precision)
+			elif args['desc'] == "Scanning contents":
+				print("Scanning Contents")
+				singlefile_progress_info.set("Scanning Contents")
+
+
 			#self.singlefile_progress.set(float(self.singlefile_progress.get())+1)
 
-		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar)
+		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar, self.singlefile_progress, self.singlefile_progress_info)
 
 	def open_settings(self, myParent):
 		settings=Toplevel(myParent) # Child window

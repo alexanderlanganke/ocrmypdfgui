@@ -10,8 +10,8 @@ from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
 
-def start_job(dir_path, progressbar_batch, ocrmypdfsettings):
-	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, ocrmypdfsettings), daemon=True)
+def start_job(dir_path, progressbar_batch, progressbar_singlefile, ocrmypdfsettings):
+	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, progressbar_singlefile, ocrmypdfsettings), daemon=True)
 	t.start()
 
 def ocr_run(file_path, ocrmypdfsettings):
@@ -38,7 +38,7 @@ def ocr_run(file_path, ocrmypdfsettings):
 		print(e)
 		return "Error"
 
-def batch_ocr(dir_path, progressbar_batch, ocrmypdfsettings):
+def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, ocrmypdfsettings):
 	# walks through given path and uses OCR Function on every pdf in path
 	progressbar_batch.set(0.0)	#resets Progressbar
 	progress_precision = 0.0
@@ -72,6 +72,7 @@ def batch_ocr(dir_path, progressbar_batch, ocrmypdfsettings):
 					ocr_run(full_path, ocrmypdfsettings)
 					progress_precision = progress_precision + percent
 					progressbar_batch.set(round(progress_precision))
+					progressbar_singlefile.set(0.0)
 
 	else:
 		print("Error")
