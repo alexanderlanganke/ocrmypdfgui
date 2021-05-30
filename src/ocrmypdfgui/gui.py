@@ -33,7 +33,7 @@ class ocrmypdfgui:
 
 
 		#BUILD GUI MAIN WINDOW
-		#myParent.geometry("%dx%d%+d%+d" % (500, 500,0,0))
+		myParent.geometry("%dx%d%+d%+d" % (800, 550,0,0))
 		#MENUBAR
 		menubar = Menu(myParent)
 		filemenu = Menu(menubar, tearoff=0)
@@ -45,64 +45,80 @@ class ocrmypdfgui:
 		myParent.config(menu=menubar)
 
 		#WINDOW
-		self.myContainer1 = Frame(myParent)
-		self.myContainer1.pack()
-		self.containertop = Frame (self.myContainer1)
-		self.containertop.pack(side=TOP)
-		self.containerbottom = Frame(self.myContainer1)
-		self.containerbottom.pack(side=BOTTOM)
-		self.containerinfo = Frame(self.myContainer1)
-		self.containerinfo.pack(side=BOTTOM)
+		self.container_main = Frame(myParent)
+		self.container_main.pack(side=TOP, fill="both")
+		#Topcontainer which contains the Output Textarea
+		self.container_textarea = Frame(self.container_main)
+		self.container_textarea.pack(fill="both")
+		self.outputarea = Text(self.container_textarea)
+		self.outputarea.pack(fill="both")
 
-		self.containerleft = Frame(self.containertop)
-		self.containerleft.pack(side=LEFT)
-		self.containerright = Frame(self.containertop)
-		self.containerright.pack(side=RIGHT)
+		#Second container which contains Information
+		self.container_informationarea = Frame(self.container_main)
+		self.container_informationarea.pack()
 
-		self.container_bar_batch = Frame(self.containerbottom)
-		self.container_bar_batch.pack(side=BOTTOM)
-		self.container_bar_singlefile = Frame(self.containerbottom)
-		self.container_bar_singlefile.pack(side=BOTTOM)
+		self.dir_path_label = Label(self.container_informationarea, textvariable=self.dir_path)
+		self.dir_path_label.pack(side=TOP)
+		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile)
+		self.label_currentfile.pack(side=TOP)
 
-		self.dir_path_label = Label(self.containerleft, textvariable=self.dir_path)
-		self.dir_path_label.pack()
-		#self.text = Text(self.containerbottom, undo = True, height = 20, width = 70)
-		#self.text.pack(expand = True)
+		#Third container which contains the Buttons
+		self.container_buttons = Frame(self.container_main)
+		self.container_buttons.pack()
 
 		#Choose Path
-		self.button1 = Button(self.containerbottom, text="Choose Batch OCR Directory", command=lambda: self.choose_batch_directory(self, self.dir_path) )
+		self.button1 = Button(self.container_buttons, text="Choose Batch OCR Directory", command=lambda: self.choose_batch_directory(self, self.dir_path) )
 		self.button1.pack(side=LEFT)
 
 		#Choose File
-		self.button2 = Button(self.containerbottom, text="Choose Single File", command=lambda: self.choose_file(self, self.dir_path) )
+		self.button2 = Button(self.container_buttons, text="Choose Single File", command=lambda: self.choose_file(self, self.dir_path) )
 		self.button2.pack(side=LEFT)
 
 		#Start OCR
-		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: start_job(self.dir_path.get(), self.currentfile, self.batch_progress, self.singlefile_progress, self.ocrmypdfsettings) )
+		self.button3 = Button(self.container_buttons, text="Start OCR Job", command=lambda: start_job(self.dir_path.get(), self.currentfile, self.batch_progress, self.singlefile_progress, self.outputarea, self.ocrmypdfsettings) )
 		self.button3.pack(side=LEFT)
-		self.label_currentfile = Label(self.containerinfo, textvariable=self.currentfile)
-		self.label_currentfile.pack(side=BOTTOM)
 
-		#Progress
-		#Batch
-		self.progressbar_batch = Progressbar(self.container_bar_batch, orient="horizontal", length=100, mode="determinate", variable=self.batch_progress)
-		self.progressbar_batch.pack(side=LEFT)
-		self.label_info_batch = Label(self.container_bar_batch, textvariable=self.batch_progress)
-		self.label_info_batch.pack(side=LEFT)
-		self.label_info_batch_percent= Label(self.container_bar_batch, text="%")
-		self.label_info_batch_percent.pack(side=RIGHT)
-		#SingleFile
-		self.progressbar_singlefile = Progressbar(self.container_bar_singlefile, orient="horizontal", length=100, mode="determinate", variable=self.singlefile_progress)
+
+
+		#Fourth container for progress information
+		self.container_progress = Frame(self.container_main)
+		self.container_progress.pack(side=BOTTOM, fill='x')
+
+		self.container_progress_top = Frame(self.container_progress)
+		self.container_progress_top.pack(side=TOP, fill='x')
+		self.container_progress_top_bar = Frame(self.container_progress_top)
+		self.container_progress_top_bar.pack(side=LEFT)
+		self.container_progress_top_information = Frame(self.container_progress_top)
+		self.container_progress_top_information.pack(side=RIGHT)
+
+		self.progressbar_singlefile = Progressbar(self.container_progress_top_bar, orient="horizontal", length=500, mode="determinate", variable=self.singlefile_progress)
 		self.progressbar_singlefile.pack(side=LEFT)
-		self.label_info_singlefile = Label(self.container_bar_singlefile, textvariable=self.singlefile_progress_info)
+		self.label_info_singlefile = Label(self.container_progress_top_information, textvariable=self.singlefile_progress_info)
 		self.label_info_singlefile.pack(side=RIGHT)
+
+		self.container_progress_bottom = Frame(self.container_progress)
+		self.container_progress_bottom.pack(side=BOTTOM, fill='x')
+		self.container_progress_bottom_bar = Frame(self.container_progress_bottom)
+		self.container_progress_bottom_bar.pack(side=LEFT)
+		self.container_progress_bottom_information = Frame(self.container_progress_bottom)
+		self.container_progress_bottom_information.pack(side=RIGHT)
+
+		self.progressbar_batch = Progressbar(self.container_progress_bottom_bar, orient="horizontal", length=500, mode="determinate", variable=self.batch_progress)
+		self.progressbar_batch.pack(side=LEFT)
+		self.label_info_batch = Label(self.container_progress_bottom_information, textvariable=self.batch_progress)
+		self.label_info_batch.pack(side=LEFT)
+		self.label_info_batch_percent= Label(self.container_progress_bottom_information, text="%")
+		self.label_info_batch_percent.pack(side=RIGHT)
+
+
+
 
 		def increment_progress_bar(self, args, singlefile_progress, singlefile_progress_info):
 			print("increment_progress_bar")
 			print(args['total'])
 			if args['desc'] == "OCR":
 				print("OCR Running")
-				percent = float(args['unit_scale']) * 100
+				percent = float(args['unit_scale']) * 500
 				print(percent)
 				precision = float(singlefile_progress.get()) + percent
 				singlefile_progress_info.set("OCR Running")
