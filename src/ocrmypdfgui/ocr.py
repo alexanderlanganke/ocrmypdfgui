@@ -60,7 +60,8 @@ def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, ocrmypdfsetti
 				if file_ext == '.pdf':
 					number_of_files=number_of_files+1
 
-			percent = 100/number_of_files
+			if number_of_files >0:
+				percent = 100/number_of_files
 		for dir_name, subdirs, file_list in os.walk(dir_path):
 			print(file_list)
 
