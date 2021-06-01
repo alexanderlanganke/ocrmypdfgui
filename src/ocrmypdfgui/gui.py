@@ -28,12 +28,14 @@ class ocrmypdfgui:
 		self.singlefile_progress_info.set("Idle")
 		self.currentfile = StringVar()
 		self.ocrmypdfsettings = {}
+		self.ocrmypdfapioptions_info = StringVar()
 		self.load_settings()
 		self.ocrmypdfapioptions = get_api_options()
 
 
+
 		#BUILD GUI MAIN WINDOW
-		myParent.geometry("%dx%d%+d%+d" % (800, 550,0,0))
+		myParent.geometry("800x600")
 		#MENUBAR
 		menubar = Menu(myParent)
 		filemenu = Menu(menubar, tearoff=0)
@@ -46,7 +48,7 @@ class ocrmypdfgui:
 
 		#WINDOW
 		self.container_main = Frame(myParent)
-		self.container_main.pack(side=TOP, fill="both")
+		self.container_main.pack(fill="both")
 		#Topcontainer which contains the Output Textarea
 		self.container_textarea = Frame(self.container_main)
 		self.container_textarea.pack(fill="both")
@@ -59,8 +61,10 @@ class ocrmypdfgui:
 
 		self.dir_path_label = Label(self.container_informationarea, textvariable=self.dir_path)
 		self.dir_path_label.pack(side=TOP)
-		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile)
+		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile, wraplength=800)
 		self.label_currentfile.pack(side=TOP)
+		self.label_ocroptions = Label(self.container_informationarea, textvariable=self.ocrmypdfapioptions_info, wraplength=800)
+		self.label_ocroptions.pack(side=TOP)
 
 		#Third container which contains the Buttons
 		self.container_buttons = Frame(self.container_main)
@@ -128,26 +132,35 @@ class ocrmypdfgui:
 				print("Scanning Contents")
 				singlefile_progress_info.set("Scanning Contents")
 
-
-			#self.singlefile_progress.set(float(self.singlefile_progress.get())+1)
-
 		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar, self.singlefile_progress, self.singlefile_progress_info)
 
 	def open_settings(self, myParent):
 		settings=Toplevel(myParent) # Child window
-		#settings.geometry("200x200")  # Size of the window
+		settings.geometry("400x500")  # Size of the window
 		settings.title("Settings")
 		myContainer2 = Frame(settings)
-		myContainer2.pack()
+		myContainer2.pack(fill=BOTH)
+
+		container_top = Frame(myContainer2)
+		container_top.pack(side=TOP, fill=BOTH)
+		container_bottom = Frame(myContainer2)
+		container_bottom.pack(side=BOTTOM, fill=BOTH)
+
+		container_textbox = Frame(container_top)
+		container_textbox.pack(side=LEFT, fill="x")
+
+		container_checkobx = Frame(container_top)
+		container_checkobx.pack(side=RIGHT, fill="x")
+
+
 
 		dynamic_widgets = {}
-		#i=1
 		for k, v in self.ocrmypdfapioptions.items():
 			#dynamically create widgets here
 			if v == "bool":
 				dynamic_widgets[k] = {}
 				dynamic_widgets[k]["value"] = BooleanVar()
-				dynamic_widgets[k]["widget"] = Checkbutton(myContainer2, text=k, variable=dynamic_widgets[k]["value"])
+				dynamic_widgets[k]["widget"] = Checkbutton(container_checkobx, text=k, variable=dynamic_widgets[k]["value"])
 				dynamic_widgets[k]["widget"].pack()
 				dynamic_widgets[k]["type"] = "bool"
 
@@ -160,17 +173,17 @@ class ocrmypdfgui:
 			if v == "str" and k != "keywords" and k != "unpaper_args" and k != "pages":
 				dynamic_widgets[k] = {}
 				dynamic_widgets[k]["value"] = StringVar()
-				dynamic_widgets[k]["widget"] = Entry(myContainer2, textvariable=dynamic_widgets[k]["value"])
+				dynamic_widgets[k]["widget"] = Entry(container_textbox, textvariable=dynamic_widgets[k]["value"])
 				dynamic_widgets[k]["value"].set("")
 				dynamic_widgets[k]["widget"].pack()
 				dynamic_widgets[k]["type"] = "str"
-				dynamic_widgets[k]["label"] = Label(myContainer2, text=k)
+				dynamic_widgets[k]["label"] = Label(container_textbox, text=k)
 				dynamic_widgets[k]["label"].pack()
 				if self.ocrmypdfsettings.get(k):
 					dynamic_widgets[k]["value"].set(self.ocrmypdfsettings[k])
 
-		savebutton = Button(myContainer2, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
-		savebutton.pack()
+		savebutton = Button(container_bottom, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
+		savebutton.pack(fill=BOTH)
 
 	def save_settings(self, w, dynamic_widgets):
 		settings = {}
@@ -189,7 +202,6 @@ class ocrmypdfgui:
 			print("Error Saving to file.")
 			messagebox.showerror(title="Error", message="Error saving settings to disk.")
 		self.load_settings()
-		#w.destroy()
 
 	def load_settings(self):
 		#Open Settings File
@@ -197,23 +209,28 @@ class ocrmypdfgui:
 			print("Settings found")
 			with open(os.path.join(os.path.dirname(__file__), 'settings.ini')) as f:
 				self.ocrmypdfsettings = json.load(f)
+
+			self.ocrmypdfapioptions_info.set(self.dict_to_string(self.ocrmypdfsettings))
 			print("Settings Loaded")
 
 		else:
 			print("Settings not found")
 			pass
 
+
+	def dict_to_string(self, dict):
+		string = ""
+		for key, value in dict.items():
+			string = string + key + "=" + str(value) + "; "
+		return string
+
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
 		dir_path.set(askdirectory())
-		#root.update_idletasks()
-		print(dir_path.get())
 
 	def choose_file(self, myParent, dir_path):
 		#Runs Filepicker and sets path variable
 		dir_path.set(askopenfilename(filetypes=[("PDF files", ".pdf")]))
-		#self.update_idletasks()
-		print(dir_path.get())
 
 
 
