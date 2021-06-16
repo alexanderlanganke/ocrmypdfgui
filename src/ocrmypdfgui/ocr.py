@@ -20,7 +20,7 @@ def ocr_run(file_path, ocrmypdfsettings):
 		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar"])
 
 		print("OCR complete.\n")
-		return "end", "OCR complete.\n"
+		return "OCR complete.\n"
 	except ocrmypdf.exceptions.PriorOcrFoundError:
 
 		print("Prior OCR - Skipping\n")

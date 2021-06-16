@@ -35,7 +35,22 @@ class ocrmypdfgui:
 
 
 		#BUILD GUI MAIN WINDOW
-		myParent.geometry("800x600")
+		window_width = 2500
+		window_height = 1000
+
+		# get the screen dimension
+		screen_width = myParent.winfo_screenwidth()
+		screen_height = myParent.winfo_screenheight()
+
+		# find the center point
+		center_x = int(screen_width/2 - window_width / 2)
+		center_y = int(screen_height/2 - window_height / 2)
+
+		# set the position of the window to the center of the screen
+		myParent.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+		myParent.resizable(True, False)
+		myParent.minsize(window_width, window_height)
+		#myParent.geometry("2000x1000+50+50")
 		#MENUBAR
 		menubar = Menu(myParent)
 		filemenu = Menu(menubar, tearoff=0)
@@ -57,14 +72,14 @@ class ocrmypdfgui:
 
 		#Second container which contains Information
 		self.container_informationarea = Frame(self.container_main)
-		self.container_informationarea.pack()
+		self.container_informationarea.pack(fill="both")
 
 		self.dir_path_label = Label(self.container_informationarea, textvariable=self.dir_path)
 		self.dir_path_label.pack(side=TOP)
-		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile, wraplength=800)
+		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile, wraplength=2500)
 		self.label_currentfile.pack(side=TOP)
-		self.label_ocroptions = Label(self.container_informationarea, textvariable=self.ocrmypdfapioptions_info, wraplength=800)
-		self.label_ocroptions.pack(side=TOP)
+		#self.label_ocroptions = Label(self.container_informationarea, textvariable=self.ocrmypdfapioptions_info, wraplength=1500)
+		#self.label_ocroptions.pack(side=TOP)
 
 		#Third container which contains the Buttons
 		self.container_buttons = Frame(self.container_main)
@@ -85,7 +100,7 @@ class ocrmypdfgui:
 
 
 		#Fourth container for progress information
-		self.container_progress = Frame(self.container_main)
+		self.container_progress = Frame(self.container_main, height=200)
 		self.container_progress.pack(side=BOTTOM, fill='x')
 
 		self.container_progress_top = Frame(self.container_progress)
@@ -136,7 +151,7 @@ class ocrmypdfgui:
 
 	def open_settings(self, myParent):
 		settings=Toplevel(myParent) # Child window
-		settings.geometry("400x500")  # Size of the window
+		#settings.geometry("400x500")  # Size of the window
 		settings.title("Settings")
 		myContainer2 = Frame(settings)
 		myContainer2.pack(fill=BOTH)
