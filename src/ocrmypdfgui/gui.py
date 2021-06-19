@@ -4,9 +4,9 @@
 import os
 import sys
 import string
-from ocr import start_job
-from ocr import get_api_options
-from plugin_progressbar import ocrmypdf_progressbar_singlefile
+from ocrmypdfgui.ocr import start_job
+from ocrmypdfgui.ocr import get_api_options
+from ocrmypdfgui.plugin_progressbar import ocrmypdf_progressbar_singlefile
 import json
 from tkinter import *
 from tkinter.filedialog import askdirectory
@@ -241,11 +241,11 @@ class ocrmypdfgui:
 
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
-		dir_path.set(askdirectory())
+		dir_path.set(askdirectory(initialdir='~', title='Select Directory',))
 
 	def choose_file(self, myParent, dir_path):
 		#Runs Filepicker and sets path variable
-		dir_path.set(askopenfilename(filetypes=[("PDF files", ".pdf")]))
+		dir_path.set(askopenfilename(initialdir='~', title='Select File', filetypes=[("PDF files", ".pdf")]))
 
 
 

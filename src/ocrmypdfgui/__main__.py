@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from gui import run
+from ocrmypdfgui.gui import run
 
 def main(args=None):
 	if args is None:
