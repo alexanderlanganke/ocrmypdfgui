@@ -28,12 +28,29 @@ class ocrmypdfgui:
 		self.singlefile_progress_info.set("Idle")
 		self.currentfile = StringVar()
 		self.ocrmypdfsettings = {}
+		self.ocrmypdfapioptions_info = StringVar()
 		self.load_settings()
 		self.ocrmypdfapioptions = get_api_options()
 
 
+
 		#BUILD GUI MAIN WINDOW
-		#myParent.geometry("%dx%d%+d%+d" % (500, 500,0,0))
+		window_width = 2500
+		window_height = 1000
+
+		# get the screen dimension
+		screen_width = myParent.winfo_screenwidth()
+		screen_height = myParent.winfo_screenheight()
+
+		# find the center point
+		center_x = int(screen_width/2 - window_width / 2)
+		center_y = int(screen_height/2 - window_height / 2)
+
+		# set the position of the window to the center of the screen
+		myParent.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+		myParent.resizable(True, False)
+		myParent.minsize(window_width, window_height)
+		#myParent.geometry("2000x1000+50+50")
 		#MENUBAR
 		menubar = Menu(myParent)
 		filemenu = Menu(menubar, tearoff=0)
@@ -45,64 +62,82 @@ class ocrmypdfgui:
 		myParent.config(menu=menubar)
 
 		#WINDOW
-		self.myContainer1 = Frame(myParent)
-		self.myContainer1.pack()
-		self.containertop = Frame (self.myContainer1)
-		self.containertop.pack(side=TOP)
-		self.containerbottom = Frame(self.myContainer1)
-		self.containerbottom.pack(side=BOTTOM)
-		self.containerinfo = Frame(self.myContainer1)
-		self.containerinfo.pack(side=BOTTOM)
+		self.container_main = Frame(myParent)
+		self.container_main.pack(fill="both")
+		#Topcontainer which contains the Output Textarea
+		self.container_textarea = Frame(self.container_main)
+		self.container_textarea.pack(fill="both")
+		self.outputarea = Text(self.container_textarea)
+		self.outputarea.pack(fill="both")
 
-		self.containerleft = Frame(self.containertop)
-		self.containerleft.pack(side=LEFT)
-		self.containerright = Frame(self.containertop)
-		self.containerright.pack(side=RIGHT)
+		#Second container which contains Information
+		self.container_informationarea = Frame(self.container_main)
+		self.container_informationarea.pack(fill="both")
 
-		self.container_bar_batch = Frame(self.containerbottom)
-		self.container_bar_batch.pack(side=BOTTOM)
-		self.container_bar_singlefile = Frame(self.containerbottom)
-		self.container_bar_singlefile.pack(side=BOTTOM)
+		self.dir_path_label = Label(self.container_informationarea, textvariable=self.dir_path)
+		self.dir_path_label.pack(side=TOP)
+		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile, wraplength=2500)
+		self.label_currentfile.pack(side=TOP)
+		#self.label_ocroptions = Label(self.container_informationarea, textvariable=self.ocrmypdfapioptions_info, wraplength=1500)
+		#self.label_ocroptions.pack(side=TOP)
 
-		self.dir_path_label = Label(self.containerleft, textvariable=self.dir_path)
-		self.dir_path_label.pack()
-		#self.text = Text(self.containerbottom, undo = True, height = 20, width = 70)
-		#self.text.pack(expand = True)
+		#Third container which contains the Buttons
+		self.container_buttons = Frame(self.container_main)
+		self.container_buttons.pack()
 
 		#Choose Path
-		self.button1 = Button(self.containerbottom, text="Choose Batch OCR Directory", command=lambda: self.choose_batch_directory(self, self.dir_path) )
+		self.button1 = Button(self.container_buttons, text="Choose Batch OCR Directory", command=lambda: self.choose_batch_directory(self, self.dir_path) )
 		self.button1.pack(side=LEFT)
 
 		#Choose File
-		self.button2 = Button(self.containerbottom, text="Choose Single File", command=lambda: self.choose_file(self, self.dir_path) )
+		self.button2 = Button(self.container_buttons, text="Choose Single File", command=lambda: self.choose_file(self, self.dir_path) )
 		self.button2.pack(side=LEFT)
 
 		#Start OCR
-		self.button3 = Button(self.containerbottom, text="Start OCR Job", command=lambda: start_job(self.dir_path.get(), self.currentfile, self.batch_progress, self.singlefile_progress, self.ocrmypdfsettings) )
+		self.button3 = Button(self.container_buttons, text="Start OCR Job", command=lambda: start_job(self.dir_path.get(), self.currentfile, self.batch_progress, self.singlefile_progress, self.outputarea, self.ocrmypdfsettings) )
 		self.button3.pack(side=LEFT)
-		self.label_currentfile = Label(self.containerinfo, textvariable=self.currentfile)
-		self.label_currentfile.pack(side=BOTTOM)
 
-		#Progress
-		#Batch
-		self.progressbar_batch = Progressbar(self.container_bar_batch, orient="horizontal", length=100, mode="determinate", variable=self.batch_progress)
-		self.progressbar_batch.pack(side=LEFT)
-		self.label_info_batch = Label(self.container_bar_batch, textvariable=self.batch_progress)
-		self.label_info_batch.pack(side=LEFT)
-		self.label_info_batch_percent= Label(self.container_bar_batch, text="%")
-		self.label_info_batch_percent.pack(side=RIGHT)
-		#SingleFile
-		self.progressbar_singlefile = Progressbar(self.container_bar_singlefile, orient="horizontal", length=100, mode="determinate", variable=self.singlefile_progress)
+
+
+		#Fourth container for progress information
+		self.container_progress = Frame(self.container_main, height=200)
+		self.container_progress.pack(side=BOTTOM, fill='x')
+
+		self.container_progress_top = Frame(self.container_progress)
+		self.container_progress_top.pack(side=TOP, fill='x')
+		self.container_progress_top_bar = Frame(self.container_progress_top)
+		self.container_progress_top_bar.pack(side=LEFT)
+		self.container_progress_top_information = Frame(self.container_progress_top)
+		self.container_progress_top_information.pack(side=RIGHT)
+
+		self.progressbar_singlefile = Progressbar(self.container_progress_top_bar, orient="horizontal", length=2240, mode="determinate", variable=self.singlefile_progress)
 		self.progressbar_singlefile.pack(side=LEFT)
-		self.label_info_singlefile = Label(self.container_bar_singlefile, textvariable=self.singlefile_progress_info)
+		self.label_info_singlefile = Label(self.container_progress_top_information, textvariable=self.singlefile_progress_info)
 		self.label_info_singlefile.pack(side=RIGHT)
+
+		self.container_progress_bottom = Frame(self.container_progress)
+		self.container_progress_bottom.pack(side=BOTTOM, fill='x')
+		self.container_progress_bottom_bar = Frame(self.container_progress_bottom)
+		self.container_progress_bottom_bar.pack(side=LEFT)
+		self.container_progress_bottom_information = Frame(self.container_progress_bottom)
+		self.container_progress_bottom_information.pack(side=RIGHT)
+
+		self.progressbar_batch = Progressbar(self.container_progress_bottom_bar, orient="horizontal", length=2240, mode="determinate", variable=self.batch_progress)
+		self.progressbar_batch.pack(side=LEFT)
+		self.label_info_batch = Label(self.container_progress_bottom_information, textvariable=self.batch_progress)
+		self.label_info_batch.pack(side=LEFT)
+		self.label_info_batch_percent= Label(self.container_progress_bottom_information, text="%")
+		self.label_info_batch_percent.pack(side=RIGHT)
+
+
+
 
 		def increment_progress_bar(self, args, singlefile_progress, singlefile_progress_info):
 			print("increment_progress_bar")
 			print(args['total'])
 			if args['desc'] == "OCR":
 				print("OCR Running")
-				percent = float(args['unit_scale']) * 100
+				percent = float(args['unit_scale']) * 500
 				print(percent)
 				precision = float(singlefile_progress.get()) + percent
 				singlefile_progress_info.set("OCR Running")
@@ -112,26 +147,35 @@ class ocrmypdfgui:
 				print("Scanning Contents")
 				singlefile_progress_info.set("Scanning Contents")
 
-
-			#self.singlefile_progress.set(float(self.singlefile_progress.get())+1)
-
 		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar, self.singlefile_progress, self.singlefile_progress_info)
 
 	def open_settings(self, myParent):
 		settings=Toplevel(myParent) # Child window
-		#settings.geometry("200x200")  # Size of the window
+		#settings.geometry("400x500")  # Size of the window
 		settings.title("Settings")
 		myContainer2 = Frame(settings)
-		myContainer2.pack()
+		myContainer2.pack(fill=BOTH)
+
+		container_top = Frame(myContainer2)
+		container_top.pack(side=TOP, fill=BOTH)
+		container_bottom = Frame(myContainer2)
+		container_bottom.pack(side=BOTTOM, fill=BOTH)
+
+		container_textbox = Frame(container_top)
+		container_textbox.pack(side=LEFT, fill="x")
+
+		container_checkobx = Frame(container_top)
+		container_checkobx.pack(side=RIGHT, fill="x")
+
+
 
 		dynamic_widgets = {}
-		#i=1
 		for k, v in self.ocrmypdfapioptions.items():
 			#dynamically create widgets here
 			if v == "bool":
 				dynamic_widgets[k] = {}
 				dynamic_widgets[k]["value"] = BooleanVar()
-				dynamic_widgets[k]["widget"] = Checkbutton(myContainer2, text=k, variable=dynamic_widgets[k]["value"])
+				dynamic_widgets[k]["widget"] = Checkbutton(container_checkobx, text=k, variable=dynamic_widgets[k]["value"])
 				dynamic_widgets[k]["widget"].pack()
 				dynamic_widgets[k]["type"] = "bool"
 
@@ -144,17 +188,17 @@ class ocrmypdfgui:
 			if v == "str" and k != "keywords" and k != "unpaper_args" and k != "pages":
 				dynamic_widgets[k] = {}
 				dynamic_widgets[k]["value"] = StringVar()
-				dynamic_widgets[k]["widget"] = Entry(myContainer2, textvariable=dynamic_widgets[k]["value"])
+				dynamic_widgets[k]["widget"] = Entry(container_textbox, textvariable=dynamic_widgets[k]["value"])
 				dynamic_widgets[k]["value"].set("")
 				dynamic_widgets[k]["widget"].pack()
 				dynamic_widgets[k]["type"] = "str"
-				dynamic_widgets[k]["label"] = Label(myContainer2, text=k)
+				dynamic_widgets[k]["label"] = Label(container_textbox, text=k)
 				dynamic_widgets[k]["label"].pack()
 				if self.ocrmypdfsettings.get(k):
 					dynamic_widgets[k]["value"].set(self.ocrmypdfsettings[k])
 
-		savebutton = Button(myContainer2, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
-		savebutton.pack()
+		savebutton = Button(container_bottom, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
+		savebutton.pack(fill=BOTH)
 
 	def save_settings(self, w, dynamic_widgets):
 		settings = {}
@@ -173,7 +217,6 @@ class ocrmypdfgui:
 			print("Error Saving to file.")
 			messagebox.showerror(title="Error", message="Error saving settings to disk.")
 		self.load_settings()
-		#w.destroy()
 
 	def load_settings(self):
 		#Open Settings File
@@ -181,23 +224,28 @@ class ocrmypdfgui:
 			print("Settings found")
 			with open(os.path.join(os.path.dirname(__file__), 'settings.ini')) as f:
 				self.ocrmypdfsettings = json.load(f)
+
+			self.ocrmypdfapioptions_info.set(self.dict_to_string(self.ocrmypdfsettings))
 			print("Settings Loaded")
 
 		else:
 			print("Settings not found")
 			pass
 
+
+	def dict_to_string(self, dict):
+		string = ""
+		for key, value in dict.items():
+			string = string + key + "=" + str(value) + "; "
+		return string
+
 	def choose_batch_directory(self, myParent, dir_path):
 		#Runs Pathpicker and sets path variable
 		dir_path.set(askdirectory())
-		#root.update_idletasks()
-		print(dir_path.get())
 
 	def choose_file(self, myParent, dir_path):
 		#Runs Filepicker and sets path variable
 		dir_path.set(askopenfilename(filetypes=[("PDF files", ".pdf")]))
-		#self.update_idletasks()
-		print(dir_path.get())
 
 
 

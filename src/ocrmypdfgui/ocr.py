@@ -10,8 +10,8 @@ from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
 
-def start_job(dir_path, currentfile, progressbar_batch, progressbar_singlefile, ocrmypdfsettings):
-	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, progressbar_singlefile, ocrmypdfsettings, currentfile), daemon=True)
+def start_job(dir_path, currentfile, progressbar_batch, progressbar_singlefile, outputarea, ocrmypdfsettings):
+	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, progressbar_singlefile, outputarea, ocrmypdfsettings, currentfile), daemon=True)
 	t.start()
 
 def ocr_run(file_path, ocrmypdfsettings):
@@ -20,25 +20,25 @@ def ocr_run(file_path, ocrmypdfsettings):
 		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar"])
 
 		print("OCR complete.\n")
-		return "end", "OCR complete.\n"
+		return "OCR complete.\n"
 	except ocrmypdf.exceptions.PriorOcrFoundError:
 
 		print("Prior OCR - Skipping\n")
-		return "Prior OCR - SKipping\n"
+		return "Prior OCR - Skipping\n"
 	except ocrmypdf.exceptions.EncryptedPdfError:
 
 		print("PDF File is encrypted. Skipping.\n")
 		return "PDF File is encrypted. Skipping.\n"
 
 	except ocrmypdf.exceptions.BadArgsError:
-		print("Bad arguments.")
+		print("Bad arguments.\n")
 
 	except:
 		e = sys.exc_info()[0]
 		print(e)
-		return "Error"
+		return "Error.\n"
 
-def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, ocrmypdfsettings, currentfile):
+def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, outputarea, ocrmypdfsettings, currentfile):
 	# walks through given path and uses OCR Function on every pdf in path
 	progressbar_batch.set(0.0)	#resets Progressbar
 	progress_precision = 0.0
@@ -49,8 +49,12 @@ def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, ocrmypdfsetti
 		if file_ext == '.pdf':
 
 			print("Path:" + dir_path + "\n")
+			outputarea.insert("end", "File: " + dir_path + " - ")
+			outputarea.see("end")
 			currentfile.set("Current File:" + dir_path )
-			ocr_run(dir_path, ocrmypdfsettings)
+			result = ocr_run(dir_path, ocrmypdfsettings)
+			outputarea.insert("end", result)
+			outputarea.see("end")
 			progressbar_batch.set(100)
 	elif(os.path.isdir(dir_path)==True):
 		number_of_files = 0
@@ -72,8 +76,15 @@ def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, ocrmypdfsetti
 
 					print("Path:" + full_path + "\n")
 					currentfile.set("Current File:" + full_path )
-					ocr_run(full_path, ocrmypdfsettings)
+					outputarea.insert("end", "File: " + full_path + " - ")
+					outputarea.see("end")
+
+					result = ocr_run(full_path, ocrmypdfsettings)
+					outputarea.insert("end", result)
+					outputarea.see("end")
+
 					progress_precision = progress_precision + percent
+					print(progress_precision)
 					progressbar_batch.set(round(progress_precision))
 					progressbar_singlefile.set(0.0)
 
