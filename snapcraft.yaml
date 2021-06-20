@@ -18,6 +18,16 @@ parts:
     source: .
     python-packages:
       - ocrmypdf
+      - cffi  # must be a setup and install requirement
+      - coloredlogs # strictly optional
+      - img2pdf  # pure Python, so track HEAD closely
+      - pdfminer.six
+      - pikepdf
+      - Pillow
+      - pluggy
+      - reportlab
+      - setuptools
+      - tqdm
 
 apps:
   ocrmypdfgui:
