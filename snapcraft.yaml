@@ -12,8 +12,9 @@ parts:
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
+    python-version: python3
     source: .
-    stage-packages:
+    python-packages:
       - ocrmypdf
       - python3-tk
 
@@ -21,4 +22,4 @@ apps:
   ocrmypdfgui:
     command: bin/ocrmypdfgui
     adapter: none
-    plugs: ['home','removable-media','network','network-bind']
+    plugs: ['home','wayland', 'x11', 'removable-media','network','network-bind']
