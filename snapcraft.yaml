@@ -19,6 +19,7 @@ parts:
     stage-packages:
       - ocrmypdf
       - python3-tk
+      - liblept.so.5
 
     python-packages:
       - ocrmypdf
