@@ -16,6 +16,10 @@ parts:
     # See 'snapcraft plugins'
     plugin: python
     source: .
+    stage-packages:
+      - ocrmypdf
+      - python3-tk
+
     python-packages:
       - ocrmypdf
       - cffi  # must be a setup and install requirement
@@ -32,5 +36,7 @@ parts:
 apps:
   ocrmypdfgui:
     command: bin/ocrmypdfgui
+    environment:
+      PYTHONPATH: $SNAP/lib/python3.8/site-packages
     adapter: none
     plugs: ['home','wayland', 'x11', 'removable-media','network','network-bind']
