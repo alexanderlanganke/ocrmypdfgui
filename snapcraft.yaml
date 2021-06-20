@@ -15,7 +15,6 @@ parts:
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
-    python-version: python3
     source: .
     python-packages:
       - ocrmypdf
