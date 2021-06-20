@@ -18,7 +18,6 @@ parts:
     source: .
     python-packages:
       - ocrmypdf
-      - python3-tk
 
 apps:
   ocrmypdfgui:
