@@ -19,7 +19,13 @@ parts:
     stage-packages:
       - ocrmypdf
       - python3-tk
-      - liblept.so.5
+      - ghostscript
+      - icc-profiles-free
+      - liblept5
+      - libxml2
+      - pngquant
+      - tesseract-ocr
+      - zlib1g      
 
     python-packages:
       - ocrmypdf
