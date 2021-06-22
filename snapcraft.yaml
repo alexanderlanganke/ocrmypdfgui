@@ -25,7 +25,7 @@ parts:
       - libxml2
       - pngquant
       - tesseract-ocr
-      - zlib1g      
+      - zlib1g
 
     python-packages:
       - ocrmypdf
