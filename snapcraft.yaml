@@ -47,5 +47,6 @@ apps:
     environment:
       PYTHONPATH: $SNAP/lib/python3.8/site-packages
       LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/
+      TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
     adapter: none
     plugs: ['home','wayland', 'x11', 'removable-media','network','network-bind']
