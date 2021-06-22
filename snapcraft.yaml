@@ -32,6 +32,11 @@ parts:
     stage-packages:
       - ocrmypdf
       - python3-tk
+      - python3-pil.imagetk
+      - fontconfig-config
+      - fonts-dejavu-core
+      - fonts-dejavu-extra
+      - locales-all
       - ghostscript
       - icc-profiles-free
       - liblept5
@@ -54,16 +59,14 @@ parts:
       - setuptools
       - tqdm
 
-
-
 apps:
   ocrmypdfgui:
     command: bin/ocrmypdfgui
     environment:
-      PYTHONPATH: $SNAP/lib/python3.8/site-packages
+      PYTHONPATH: $SNAP/lib/python3.8/site-packages:$SNAP/usr/lib/python3.9
       LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/
       TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
-    adapter: none
+    adapter: full
     plugs:
       - desktop
       - desktop-legacy
