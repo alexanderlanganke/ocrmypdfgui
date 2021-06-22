@@ -45,5 +45,6 @@ apps:
     command: bin/ocrmypdfgui
     environment:
       PYTHONPATH: $SNAP/lib/python3.8/site-packages
+      LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/
     adapter: none
     plugs: ['home','wayland', 'x11', 'removable-media','network','network-bind']
