@@ -63,7 +63,7 @@ apps:
   ocrmypdfgui:
     command: bin/ocrmypdfgui
     environment:
-      PYTHONPATH: $SNAP/lib/python3.8/site-packages:$SNAP/usr/lib/python3.9
+      PYTHONPATH: $SNAP/lib/python3.8/site-packages:$SNAP/usr/lib/python3.8
       LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/
       TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
     adapter: full
