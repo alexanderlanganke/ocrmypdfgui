@@ -29,6 +29,7 @@ parts:
 
     python-packages:
       - ocrmypdf
+      - tk
       - cffi  # must be a setup and install requirement
       - coloredlogs # strictly optional
       - img2pdf  # pure Python, so track HEAD closely
