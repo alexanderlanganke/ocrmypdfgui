@@ -31,7 +31,7 @@ parts:
     source: .
     stage-packages:
       - ocrmypdf
-      - python3-tk
+      - python3.8-tk
       - python3-pil.imagetk
       - fontconfig-config
       - fonts-dejavu-core
