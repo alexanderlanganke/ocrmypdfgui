@@ -14,15 +14,19 @@ architectures:
 parts:
    # https://forum.snapcraft.io/t/the-debian-multiarch-triplet-provider-launch-stage-snap/11738
   debian-multiarch-triplet-provider-launch:
-    plugin: nil
-    stage-snaps:
-    - debian-multiarch-triplet-provider-launch
+    source: https://github.com/Lin-Buo-Ren/debian-multiarch-triplet-provider-launch.git
+    source-tag: v1.0.0
+    plugin: dump
+    stage:
+      - bin/debian-multiarch-triplet-provider-launch
 
   # https://forum.snapcraft.io/t/the-tcltk-launch-stage-snap/11740
   tcltk-launch:
-    plugin: nil
-    stage-snaps:
-    - tcltk-launch
+    source: https://github.com/Lin-Buo-Ren/tcltk-launch.git
+    source-tag: v1.0.0
+    plugin: dump
+    stage:
+      - bin/*
 
 
   ocrmypdfgui:
@@ -61,12 +65,16 @@ parts:
 
 apps:
   ocrmypdfgui:
+    adapter: full
     command: bin/ocrmypdfgui
+    command-chain:
+    - bin/debian-multiarch-triplet-provider-launch
+    - bin/tcltk-launch
     environment:
       PYTHONPATH: $SNAP/lib/python3.8/site-packages:$SNAP/usr/lib/python3.8
       LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/
-      TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
-    adapter: full
+      #TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
+
     plugs:
       - desktop
       - desktop-legacy
@@ -79,7 +87,3 @@ apps:
       - removable-media
       - network
       - network-bind
-
-    command-chain:
-    - bin/debian-multiarch-triplet-provider-launch
-    - bin/tcltk-launch
