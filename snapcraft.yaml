@@ -12,17 +12,17 @@ architectures:
   - build-on: [amd64]
 
 parts:
-#  # https://forum.snapcraft.io/t/the-debian-multiarch-triplet-provider-launch-stage-snap/11738
-#  debian-multiarch-triplet-provider-launch:
-#    plugin: nil
-#    stage-snaps:
-#    - debian-multiarch-triplet-provider-launch
+   # https://forum.snapcraft.io/t/the-debian-multiarch-triplet-provider-launch-stage-snap/11738
+  debian-multiarch-triplet-provider-launch:
+    plugin: nil
+    stage-snaps:
+    - debian-multiarch-triplet-provider-launch
 
-#  # https://forum.snapcraft.io/t/the-tcltk-launch-stage-snap/11740
-#  tcltk-launch:
-#    plugin: nil
-#    stage-snaps:
-#    - tcltk-launch
+  # https://forum.snapcraft.io/t/the-tcltk-launch-stage-snap/11740
+  tcltk-launch:
+    plugin: nil
+    stage-snaps:
+    - tcltk-launch
 
 
   ocrmypdfgui:
@@ -65,7 +65,7 @@ apps:
     environment:
       PYTHONPATH: $SNAP/lib/python3.8/site-packages:$SNAP/usr/lib/python3.8
       LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/
-#      TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
+      TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
     adapter: full
     plugs:
       - desktop
@@ -80,6 +80,6 @@ apps:
       - network
       - network-bind
 
-#    command-chain:
-#    - bin/debian-multiarch-triplet-provider-launch
-#    - bin/tcltk-launch
+    command-chain:
+    - bin/debian-multiarch-triplet-provider-launch
+    - bin/tcltk-launch
