@@ -137,7 +137,7 @@ class ocrmypdfgui:
 			print(args['total'])
 			if args['desc'] == "OCR":
 				print("OCR Running")
-				percent = float(args['unit_scale']) * 700
+				percent = float(args['unit_scale']) * 100
 				print(percent)
 				precision = float(singlefile_progress.get()) + percent
 				singlefile_progress_info.set("OCR Running")
