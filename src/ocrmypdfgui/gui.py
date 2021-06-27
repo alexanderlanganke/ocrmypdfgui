@@ -197,6 +197,20 @@ class ocrmypdfgui:
 				if self.ocrmypdfsettings.get(k):
 					dynamic_widgets[k]["value"].set(self.ocrmypdfsettings[k])
 
+		for k, v in self.ocrmypdfapioptions.items():
+				#dynamically create widgets here
+			if v == "Iterable[str]":
+				dynamic_widgets[k] = {}
+				dynamic_widgets[k]["value"] = StringVar()
+				dynamic_widgets[k]["widget"] = Entry(container_textbox, textvariable=dynamic_widgets[k]["value"])
+				dynamic_widgets[k]["value"].set("")
+				dynamic_widgets[k]["widget"].pack()
+				dynamic_widgets[k]["type"] = "str"
+				dynamic_widgets[k]["label"] = Label(container_textbox, text=k)
+				dynamic_widgets[k]["label"].pack()
+				if self.ocrmypdfsettings.get(k):
+					dynamic_widgets[k]["value"].set(self.ocrmypdfsettings[k])
+
 		savebutton = Button(container_bottom, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
 		savebutton.pack(fill=BOTH)
 

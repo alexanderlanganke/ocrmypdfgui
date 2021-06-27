@@ -100,7 +100,7 @@ def get_api_options():
 	    if (param.kind == param.KEYWORD_ONLY):
 	        #print(param.name)
 	        #print(param.annotation)
-	        if str(param.annotation)[8:-2] == "bool" or str(param.annotation)[8:-2] == "int" or str(param.annotation)[8:-2] == "float" or str(param.annotation)[8:-2] == "str":
+	        if str(param.annotation)[8:-2] == "bool" or str(param.annotation)[8:-2] == "int" or str(param.annotation)[8:-2] == "float" or str(param.annotation)[8:-2] == "str" or str(param.annotation) == "typing.Iterable[str]":
 	            dict[param.name] = str(param.annotation)[8:-2]
 
 	return dict
