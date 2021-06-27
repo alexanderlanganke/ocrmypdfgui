@@ -199,7 +199,7 @@ class ocrmypdfgui:
 
 		for k, v in self.ocrmypdfapioptions.items():
 				#dynamically create widgets here
-			if v == "Iterable[str]":
+			if v == "typing.Iterable[str]":
 				dynamic_widgets[k] = {}
 				dynamic_widgets[k]["value"] = StringVar()
 				dynamic_widgets[k]["widget"] = Entry(container_textbox, textvariable=dynamic_widgets[k]["value"])
