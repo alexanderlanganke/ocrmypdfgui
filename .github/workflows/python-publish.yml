@@ -5,8 +5,8 @@ name: Upload Python Package
 
 on:
   push:
-    branches:
-      - main
+#    branches:
+#      - main
   release:
     types: [created]
 
@@ -25,7 +25,15 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
-    - name: Build and publish
+    - name: Build and publish to Test PYPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      run: |
+        python setup.py sdist bdist_wheel
+        twine upload --repository testpypi dist/*
+    - name: Build and publish to production PYPI
+      if: startsWith(github.ref, 'refs/tags')
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
