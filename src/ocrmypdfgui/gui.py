@@ -76,7 +76,7 @@ class ocrmypdfgui:
 
 		self.dir_path_label = Label(self.container_informationarea, textvariable=self.dir_path)
 		self.dir_path_label.pack(side=TOP)
-		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile, wraplength=2500)
+		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile, wraplength=800)
 		self.label_currentfile.pack(side=TOP)
 		#self.label_ocroptions = Label(self.container_informationarea, textvariable=self.ocrmypdfapioptions_info, wraplength=1500)
 		#self.label_ocroptions.pack(side=TOP)
@@ -110,7 +110,7 @@ class ocrmypdfgui:
 		self.container_progress_top_information = Frame(self.container_progress_top)
 		self.container_progress_top_information.pack(side=RIGHT)
 
-		self.progressbar_singlefile = Progressbar(self.container_progress_top_bar, orient="horizontal", length=2240, mode="determinate", variable=self.singlefile_progress)
+		self.progressbar_singlefile = Progressbar(self.container_progress_top_bar, orient="horizontal", length=700, mode="determinate", variable=self.singlefile_progress)
 		self.progressbar_singlefile.pack(side=LEFT)
 		self.label_info_singlefile = Label(self.container_progress_top_information, textvariable=self.singlefile_progress_info)
 		self.label_info_singlefile.pack(side=RIGHT)
@@ -122,7 +122,7 @@ class ocrmypdfgui:
 		self.container_progress_bottom_information = Frame(self.container_progress_bottom)
 		self.container_progress_bottom_information.pack(side=RIGHT)
 
-		self.progressbar_batch = Progressbar(self.container_progress_bottom_bar, orient="horizontal", length=2240, mode="determinate", variable=self.batch_progress)
+		self.progressbar_batch = Progressbar(self.container_progress_bottom_bar, orient="horizontal", length=700, mode="determinate", variable=self.batch_progress)
 		self.progressbar_batch.pack(side=LEFT)
 		self.label_info_batch = Label(self.container_progress_bottom_information, textvariable=self.batch_progress)
 		self.label_info_batch.pack(side=LEFT)
@@ -137,7 +137,7 @@ class ocrmypdfgui:
 			print(args['total'])
 			if args['desc'] == "OCR":
 				print("OCR Running")
-				percent = float(args['unit_scale']) * 500
+				percent = float(args['unit_scale']) * 700
 				print(percent)
 				precision = float(singlefile_progress.get()) + percent
 				singlefile_progress_info.set("OCR Running")
