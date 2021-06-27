@@ -36,7 +36,7 @@ class ocrmypdfgui:
 
 		#BUILD GUI MAIN WINDOW
 		window_width = 1000
-		window_height = 800
+		window_height = 600
 
 		# get the screen dimension
 		screen_width = myParent.winfo_screenwidth()
