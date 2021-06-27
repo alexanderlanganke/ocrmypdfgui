@@ -211,7 +211,7 @@ class ocrmypdfgui:
 				break
 
 		try:
-			json.dump(settings, open("settings.ini", "w"))
+			json.dump(settings, open(os.path.join(os.path.dirname(__file__), 'settings.ini'), "w"))
 			print("Saved")
 		except:
 			print("Error Saving to file.")
