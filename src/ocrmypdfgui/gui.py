@@ -7,6 +7,7 @@ import string
 from ocrmypdfgui.ocr import start_job
 from ocrmypdfgui.ocr import get_api_options
 from ocrmypdfgui.plugin_progressbar import ocrmypdf_progressbar_singlefile
+from pytesseract import get_languages
 import json
 from tkinter import *
 from tkinter.filedialog import askdirectory
@@ -31,11 +32,12 @@ class ocrmypdfgui:
 		self.ocrmypdfapioptions_info = StringVar()
 		self.load_settings()
 		self.ocrmypdfapioptions = get_api_options()
-		self.ocrmypdflanguages = list()
-		self.ocrmypdflanguages.append("deu")
-		self.ocrmypdflanguages.append("eng")
-		print(self.ocrmypdfsettings)
 
+		#Get installed tesseract languages on System using pytesseract get_languages() method
+		self.ocrmypdflanguages = list()
+		for i in get_languages():
+			if i != "osd":
+				self.ocrmypdflanguages.append(i)
 
 
 		#BUILD GUI MAIN WINDOW
@@ -209,16 +211,26 @@ class ocrmypdfgui:
 
 				listbox = Listbox(container_textbox, selectmode=MULTIPLE, width=20, height=10)
 				count=0
+				activated = list()
 				for i in self.ocrmypdflanguages:
 					listbox.insert(count, i)
+					if self.ocrmypdfsettings.get(k):
+						#If settings are available -> read the language part.
+						for a in self.ocrmypdfsettings["language"]:
+							if i == a:
+								#if current language we are adding to the listbox is the settings
+								# -> select it after creating the lixtbox
+								print(i)
+								print(count)
+								activated.append(count)
+						for index in activated:
+							listbox.selection_set(index)
 					count+=1
 				listbox.pack()
 				dynamic_widgets[k]["value"] = listbox
 				dynamic_widgets[k]["type"] = "list"
 				dynamic_widgets[k]["label"] = Label(container_textbox, text=k)
 				dynamic_widgets[k]["label"].pack()
-				if self.ocrmypdfsettings.get(k):
-					dynamic_widgets[k]["list"].set(selected_text_list)
 
 		savebutton = Button(container_bottom, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
 		savebutton.pack(fill=BOTH)
@@ -230,7 +242,6 @@ class ocrmypdfgui:
 			try:
 				if(v["type"] == "list"):
 					settings[k] = [v["value"].get(i) for i in v["value"].curselection()]
-
 
 				else:
 					settings[k] = v["value"].get()

@@ -35,6 +35,7 @@ setuptools.setup(
         'setuptools',
         'tqdm >= 4',
         'ocrmypdf >= 12.0.2',
+        'pytesseract >= 0.3.8',
     ],
     entry_points={'console_scripts': ['ocrmypdfgui = ocrmypdfgui.__main__:main']},
 
