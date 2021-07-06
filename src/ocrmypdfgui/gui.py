@@ -7,6 +7,7 @@ import string
 from ocrmypdfgui.ocr import start_job
 from ocrmypdfgui.ocr import get_api_options
 from ocrmypdfgui.plugin_progressbar import ocrmypdf_progressbar_singlefile
+from pytesseract import get_languages
 import json
 from tkinter import *
 from tkinter.filedialog import askdirectory
@@ -32,6 +33,11 @@ class ocrmypdfgui:
 		self.load_settings()
 		self.ocrmypdfapioptions = get_api_options()
 
+		#Get installed tesseract languages on System using pytesseract get_languages() method
+		self.ocrmypdflanguages = list()
+		for i in get_languages():
+			if i != "osd":
+				self.ocrmypdflanguages.append(i)
 
 
 		#BUILD GUI MAIN WINDOW
@@ -137,7 +143,7 @@ class ocrmypdfgui:
 			print(args['total'])
 			if args['desc'] == "OCR":
 				print("OCR Running")
-				percent = float(args['unit_scale']) * 100
+				percent = float(args['unit_scale']) * 700
 				print(percent)
 				precision = float(singlefile_progress.get()) + percent
 				singlefile_progress_info.set("OCR Running")
@@ -170,6 +176,7 @@ class ocrmypdfgui:
 
 
 		dynamic_widgets = {}
+		#print(self.ocrmypdfapioptions)
 		for k, v in self.ocrmypdfapioptions.items():
 			#dynamically create widgets here
 			if v == "bool":
@@ -197,14 +204,47 @@ class ocrmypdfgui:
 				if self.ocrmypdfsettings.get(k):
 					dynamic_widgets[k]["value"].set(self.ocrmypdfsettings[k])
 
+		for k, v in self.ocrmypdfapioptions.items():
+				#dynamically create widgets here
+			if v == "typing.Iterable[str]" and k=="language":
+				dynamic_widgets[k] = {}
+
+				listbox = Listbox(container_textbox, selectmode=MULTIPLE, width=20, height=10)
+				count=0
+				activated = list()
+				for i in self.ocrmypdflanguages:
+					listbox.insert(count, i)
+					if self.ocrmypdfsettings.get(k):
+						#If settings are available -> read the language part.
+						for a in self.ocrmypdfsettings["language"]:
+							if i == a:
+								#if current language we are adding to the listbox is the settings
+								# -> select it after creating the lixtbox
+								print(i)
+								print(count)
+								activated.append(count)
+						for index in activated:
+							listbox.selection_set(index)
+					count+=1
+				listbox.pack()
+				dynamic_widgets[k]["value"] = listbox
+				dynamic_widgets[k]["type"] = "list"
+				dynamic_widgets[k]["label"] = Label(container_textbox, text=k)
+				dynamic_widgets[k]["label"].pack()
+
 		savebutton = Button(container_bottom, text="Save Settings", command=lambda: self.save_settings(settings, dynamic_widgets) )
 		savebutton.pack(fill=BOTH)
 
 	def save_settings(self, w, dynamic_widgets):
 		settings = {}
+		#print(dynamic_widgets)
 		for k, v in dynamic_widgets.items():
 			try:
-				settings[k] = v["value"].get()
+				if(v["type"] == "list"):
+					settings[k] = [v["value"].get(i) for i in v["value"].curselection()]
+
+				else:
+					settings[k] = v["value"].get()
 			except:
 				print("Error Creating settings Dict")
 				messagebox.showerror(title="Error", message="Error creating settings dictionary.")

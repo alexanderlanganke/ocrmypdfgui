@@ -15,10 +15,10 @@ def start_job(dir_path, currentfile, progressbar_batch, progressbar_singlefile, 
 	t.start()
 
 def ocr_run(file_path, ocrmypdfsettings):
+	print(ocrmypdfsettings)
 	#runs ocrmypdf on given file
 	try:
 		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
-
 		print("OCR complete.\n")
 		return "OCR complete.\n"
 	except ocrmypdf.exceptions.PriorOcrFoundError:
@@ -97,10 +97,13 @@ def get_api_options():
 	#print (str(sig))
 	dict = {}
 	for param in sig.parameters.values():
-	    if (param.kind == param.KEYWORD_ONLY):
-	        #print(param.name)
-	        #print(param.annotation)
-	        if str(param.annotation)[8:-2] == "bool" or str(param.annotation)[8:-2] == "int" or str(param.annotation)[8:-2] == "float" or str(param.annotation)[8:-2] == "str":
-	            dict[param.name] = str(param.annotation)[8:-2]
+		if (param.kind == param.KEYWORD_ONLY):
+			#print(param.name)
+			#print(param.annotation)
+			if str(param.annotation)[8:-2] == "bool" or str(param.annotation)[8:-2] == "int" or str(param.annotation)[8:-2] == "float" or str(param.annotation)[8:-2] == "str" or str(param.annotation) == "typing.Iterable[str]":
+				if(str(param.annotation) == "typing.Iterable[str]"):
+					dict[param.name] = str(param.annotation)
+				else:
+					dict[param.name] = str(param.annotation)[8:-2]
 
 	return dict
