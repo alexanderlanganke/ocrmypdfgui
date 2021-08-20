@@ -8,49 +8,68 @@ description: |
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: devmode # use 'strict' once you have the right plugs and slots
 
-architectures:
-  - build-on: [amd64]
+architectures: [amd64]
+
+environment:
+    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
+    GS_LIB: $SNAP/usr/share/ghostscript/9.26/Resource/Init
+    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.26/Resource/Font
+
+apps:
+  ocrmypdfgui:
+#    adapter: full
+    command: bin/snapcraft-preload python3 bin/ocrmypdfgui
+    command-chain: [bin/debian-multiarch-triplet-provider-launch, bin/tcltk-launch]
+#    desktop: /build/ocrthypdf/parts/get-source/src/gui/ocrthypdf.desktop
+    extensions: [gnome-3-34]
+#    environment:
+#      PYTHONPATH: $SNAP/lib/python3.8/site-packages:$SNAP/usr/lib/python3.8
+#      LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/
+      #TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
+    plugs:
+      - desktop
+      - desktop-legacy
+      - unity7
+      - wayland
+      - x11
+      - home
+      - removable-media
+
 
 parts:
-   # https://forum.snapcraft.io/t/the-debian-multiarch-triplet-provider-launch-stage-snap/11738
-  debian-multiarch-triplet-provider-launch:
-    source: https://github.com/Lin-Buo-Ren/debian-multiarch-triplet-provider-launch.git
-    source-tag: v1.0.0
+  get-source:
     plugin: dump
-    stage:
-      - bin/debian-multiarch-triplet-provider-launch
-
-  # https://forum.snapcraft.io/t/the-tcltk-launch-stage-snap/11740
+    source: https://github.com/alexanderlanganke/ocrmypdfgui.git
+  # https://forum.snapcraft.io/t/the-debian-multiarch-triplet-provider-launch-stage-snap/11738
+  snapcraft-preload:
+      source: https://github.com/sergiusens/snapcraft-preload.git
+      plugin: cmake
+      build-packages:
+        - on amd64:
+          - gcc-multilib
+          - g++-multilib
+      stage-packages:
+      - lib32stdc++6
   tcltk-launch:
-    source: https://github.com/Lin-Buo-Ren/tcltk-launch.git
-    source-tag: v1.0.0
-    plugin: dump
-    stage:
-      - bin/*
-
+    plugin: nil
+    stage-snaps: [tcltk-launch]
+  debian-multiarch-triplet-provider-launch:
+    plugin: nil
+    stage-snaps: [debian-multiarch-triplet-provider-launch]
 
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
     source: .
-    stage-packages:
-      - ocrmypdf
-      - tcl
-      - python3.8-tk
-      - python3-pil.imagetk
-      - fontconfig-config
-      - fonts-dejavu-core
-      - fonts-dejavu-extra
-      - locales-all
-      - ghostscript
-      - icc-profiles-free
-      - liblept5
-      - libxml2
-      - pngquant
-      - tesseract-ocr
-      - zlib1g
+    stage-packages: [python3-tk, tcl, ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
+#      - ocrmypdf
+#      - python3-pil.imagetk
+#      - fontconfig-config
+#      - fonts-dejavu-core
+#      - fonts-dejavu-extra
+#      - locales-all
 
-    python-packages:
+    python-packages: 
       - ocrmypdf
       - cffi  # must be a setup and install requirement
       - coloredlogs # strictly optional
@@ -63,28 +82,3 @@ parts:
       - setuptools
       - tqdm
       - tk
-
-apps:
-  ocrmypdfgui:
-    adapter: full
-    command: bin/ocrmypdfgui
-    command-chain:
-    - bin/debian-multiarch-triplet-provider-launch
-    - bin/tcltk-launch
-    environment:
-      PYTHONPATH: $SNAP/lib/python3.8/site-packages:$SNAP/usr/lib/python3.8
-      LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/
-      #TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
-
-    plugs:
-      - desktop
-      - desktop-legacy
-      - gsettings
-      - opengl
-      - unity7
-      - wayland
-      - x11
-      - home
-      - removable-media
-      - network
-      - network-bind
