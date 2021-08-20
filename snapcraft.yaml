@@ -42,15 +42,15 @@ parts:
     plugin: dump
     source: https://github.com/alexanderlanganke/ocrmypdfgui.git
   # https://forum.snapcraft.io/t/the-debian-multiarch-triplet-provider-launch-stage-snap/11738
-    snapcraft-preload:
-        source: https://github.com/sergiusens/snapcraft-preload.git
-        plugin: cmake
-        build-packages:
-          - on amd64:
-            - gcc-multilib
-            - g++-multilib
-#      stage-packages:
-#      - lib32stdc++6
+  snapcraft-preload:
+    source: https://github.com/sergiusens/snapcraft-preload.git
+    plugin: cmake
+    build-packages:
+      - on amd64:
+        - gcc-multilib
+        - g++-multilib
+#   stage-packages:
+#     - lib32stdc++6
   tcltk-launch:
     plugin: nil
     stage-snaps: [tcltk-launch]
