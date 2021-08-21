@@ -6,8 +6,8 @@ summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like.
 
-grade: devel # must be 'stable' to release into candidate/stable channels
-confinement: devmode # use 'strict' once you have the right plugs and slots
+grade: stable # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
 
 architectures: [amd64]
 
@@ -18,16 +18,11 @@ environment:
 
 apps:
   ocrmypdfgui:
-#    adapter: full
-#    command: bin/snapcraft-preload python3 $SNAP/bin/ocrmypdfgui
     command: bin/snapcraft-preload python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
     command-chain: [bin/debian-multiarch-triplet-provider-launch, bin/tcltk-launch]
-#    desktop: /build/ocrthypdf/parts/get-source/src/gui/ocrthypdf.desktop
+    desktop: $SNAP/lib/python3.6/site-packages/ocrmypdfgui/ocrmypdfgui.desktop
     extensions: [gnome-3-34]
-#    environment:
-#      PYTHONPATH: $SNAP/lib/python3.8/site-packages:$SNAP/usr/lib/python3.8
-#      LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu/
-      #TCL_LIBRARY: $SNAP/usr/share/tcltk/tcl8.6
+
     plugs:
       - desktop
       - desktop-legacy
@@ -64,12 +59,7 @@ parts:
     plugin: python
     source: .
     stage-packages: [python3-tk, tcl, ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
-#      - ocrmypdf
-#      - python3-pil.imagetk
-#      - fontconfig-config
-#      - fonts-dejavu-core
-#      - fonts-dejavu-extra
-#      - locales-all
+
 
     python-packages:
       - ocrmypdf
