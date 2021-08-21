@@ -20,7 +20,7 @@ apps:
   ocrmypdfgui:
     command: bin/snapcraft-preload python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
     command-chain: [bin/debian-multiarch-triplet-provider-launch, bin/tcltk-launch]
-    desktop: /build/parts/ocrmypdfgui/src/src/ocrmypdfgui/ocrmypdfgui.desktop
+    desktop: /parts/ocrmypdfgui/src/src/ocrmypdfgui/ocrmypdfgui.desktop
 
     extensions: [gnome-3-34]
 
