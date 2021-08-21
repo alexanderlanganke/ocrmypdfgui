@@ -19,7 +19,8 @@ environment:
 apps:
   ocrmypdfgui:
 #    adapter: full
-    command: bin/snapcraft-preload python3 $SNAP/bin/ocrmypdfgui/__main__.py
+#    command: bin/snapcraft-preload python3 $SNAP/bin/ocrmypdfgui
+    command: bin/snapcraft-preload python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
     command-chain: [bin/debian-multiarch-triplet-provider-launch, bin/tcltk-launch]
 #    desktop: /build/ocrthypdf/parts/get-source/src/gui/ocrthypdf.desktop
     extensions: [gnome-3-34]
