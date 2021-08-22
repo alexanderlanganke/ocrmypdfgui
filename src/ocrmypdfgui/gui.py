@@ -14,6 +14,7 @@ from tkinter.filedialog import askdirectory
 from tkinter.filedialog import askopenfilename
 from tkinter.ttk import *
 from tkinter import messagebox
+from pathlib import Path
 
 class ocrmypdfgui:
 	def __init__(self, myParent):
@@ -155,6 +156,7 @@ class ocrmypdfgui:
 
 		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar, self.singlefile_progress, self.singlefile_progress_info)
 
+
 	def open_settings(self, myParent):
 		settings=Toplevel(myParent) # Child window
 		#settings.geometry("400x500")  # Size of the window
@@ -252,7 +254,8 @@ class ocrmypdfgui:
 
 		try:
 #			json.dump(settings, open(os.path.join(os.path.dirname(__file__), 'settings.ini'), "w"))
-			json.dump(settings, open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui/settings.ini'), "w"))
+			Path(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini').mkdir(parents=True, exist_ok=True)
+			json.dump(settings, open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini'), "w"))
 
 			print("Saved")
 		except:
@@ -263,11 +266,11 @@ class ocrmypdfgui:
 	def load_settings(self):
 		#Open Settings File
 #		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
-		if os.path.isfile(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui/settings.ini')) == True:
+		if os.path.isfile(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) == True:
 
 			print("Settings found")
 #			with open(os.path.join(os.path.dirname(__file__), 'settings.ini')) as f:
-			with open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui/settings.ini')) as f:
+			with open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) as f:
 
 				self.ocrmypdfsettings = json.load(f)
 
