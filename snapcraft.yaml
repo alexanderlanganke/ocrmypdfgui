@@ -35,9 +35,9 @@ apps:
 
 
 parts:
-  get-source:
-    plugin: dump
-    source: https://github.com/alexanderlanganke/ocrmypdfgui.git
+#  get-source:
+#    plugin: dump
+#    source: https://github.com/alexanderlanganke/ocrmypdfgui.git
   # https://forum.snapcraft.io/t/the-debian-multiarch-triplet-provider-launch-stage-snap/11738
   snapcraft-preload:
     source: https://github.com/sergiusens/snapcraft-preload.git
