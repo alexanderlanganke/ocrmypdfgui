@@ -254,7 +254,7 @@ class ocrmypdfgui:
 
 		try:
 #			json.dump(settings, open(os.path.join(os.path.dirname(__file__), 'settings.ini'), "w"))
-			Path(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini').mkdir(parents=True, exist_ok=True)
+			Path(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')).mkdir(parents=True, exist_ok=True)
 			json.dump(settings, open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini'), "w"))
 
 			print("Saved")
