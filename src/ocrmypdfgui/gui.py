@@ -263,7 +263,7 @@ class ocrmypdfgui:
 	def load_settings(self):
 		#Open Settings File
 #		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
-		if os.path.isfile(os.path.join(os.path.expanduser('~'), '/.ocrmypdfgui/settings.ini'))) == True:
+		if os.path.isfile(os.path.join(os.path.expanduser('~'), '/.ocrmypdfgui/settings.ini')) == True:
 
 			print("Settings found")
 #			with open(os.path.join(os.path.dirname(__file__), 'settings.ini')) as f:
