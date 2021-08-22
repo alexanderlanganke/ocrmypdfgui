@@ -15,7 +15,7 @@ environment:
     TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
     GS_LIB: $SNAP/usr/share/ghostscript/9.26/Resource/Init
     GS_FONTPATH: $SNAP/usr/share/ghostscript/9.26/Resource/Font
-
+    LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
 apps:
   ocrmypdfgui:
     command: bin/snapcraft-preload python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
@@ -61,7 +61,6 @@ parts:
     source-type: git
 #    source: .
     stage-packages: [python3-tk, tcl, ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
-
 
     python-packages:
       - ocrmypdf
