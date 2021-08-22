@@ -20,7 +20,7 @@ apps:
   ocrmypdfgui:
     command: bin/snapcraft-preload python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
     command-chain: [bin/debian-multiarch-triplet-provider-launch, bin/tcltk-launch]
-    #desktop: /build/ocrmypdfgui/parts/ocrmypdfgui/src/src/ocrmypdfgui/ocrmypdfgui.desktop
+    desktop: /build/ocrmypdfgui/parts/get-source/src/gui/ocrmypdfgui.desktop
 
     extensions: [gnome-3-34]
 
@@ -35,6 +35,9 @@ apps:
 
 
 parts:
+  get-source:
+    plugin: dump
+    source: https://github.com/alexanderlanganke/ocrmypdfgui.git
   snapcraft-preload:
     source: https://github.com/sergiusens/snapcraft-preload.git
     plugin: cmake
@@ -54,7 +57,9 @@ parts:
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
-    source: .
+    source: https://github.com/alexanderlanganke/ocrmypdfgui.git
+    source-type: git
+#    source: .
     stage-packages: [python3-tk, tcl, ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
 
 
