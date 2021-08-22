@@ -46,7 +46,8 @@ parts:
       - on amd64:
         - gcc-multilib
         - g++-multilib
-
+    stage-packages:
+      - lib32stdc++6
   tcltk-launch:
     plugin: nil
     stage-snaps: [tcltk-launch]
