@@ -18,7 +18,7 @@ from tkinter import messagebox
 class ocrmypdfgui:
 	def __init__(self, myParent):
 		#init variables
-		self.script_dir = os.path.dirname(os.path.realpath(__file__))
+#		self.script_dir = os.path.dirname(os.path.realpath(__file__))
 		self.dir_path = StringVar()
 		self.dir_path.set("")
 		self.batch_progress = StringVar()
@@ -251,7 +251,9 @@ class ocrmypdfgui:
 				break
 
 		try:
-			json.dump(settings, open(os.path.join(os.path.dirname(__file__), 'settings.ini'), "w"))
+#			json.dump(settings, open(os.path.join(os.path.dirname(__file__), 'settings.ini'), "w"))
+			json.dump(settings, open(os.path.join(os.path.expanduser('~'), '/.ocrmypdfgui/settings.ini'), "w"))
+
 			print("Saved")
 		except:
 			print("Error Saving to file.")
@@ -260,9 +262,13 @@ class ocrmypdfgui:
 
 	def load_settings(self):
 		#Open Settings File
-		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
+#		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
+		if os.path.isfile(os.path.join(os.path.expanduser('~'), '/.ocrmypdfgui/settings.ini'))) == True:
+
 			print("Settings found")
-			with open(os.path.join(os.path.dirname(__file__), 'settings.ini')) as f:
+#			with open(os.path.join(os.path.dirname(__file__), 'settings.ini')) as f:
+			with open(os.path.join(os.path.expanduser('~'), '/.ocrmypdfgui/settings.ini')) as f:
+
 				self.ocrmypdfsettings = json.load(f)
 
 			self.ocrmypdfapioptions_info.set(self.dict_to_string(self.ocrmypdfsettings))
