@@ -43,7 +43,7 @@ class ocrmypdfgui:
 
 		#BUILD GUI MAIN WINDOW
 		window_width = 1000
-		window_height = 550
+		window_height = 800
 
 		# get the screen dimension
 		screen_width = myParent.winfo_screenwidth()
@@ -55,7 +55,7 @@ class ocrmypdfgui:
 
 		# set the position of the window to the center of the screen
 		myParent.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
-		myParent.resizable(True, False)
+		myParent.resizable(True, True)
 		myParent.minsize(window_width, window_height)
 		#myParent.geometry("2000x1000+50+50")
 		#MENUBAR
