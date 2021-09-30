@@ -42,7 +42,7 @@ class ocrmypdfgui:
 
 
 		#BUILD GUI MAIN WINDOW
-		window_width = 1200
+		window_width = 1400
 		window_height = 1000
 
 		# get the screen dimension
@@ -83,7 +83,7 @@ class ocrmypdfgui:
 
 		self.dir_path_label = Label(self.container_informationarea, textvariable=self.dir_path)
 		self.dir_path_label.pack(side=TOP)
-		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile, wraplength=800)
+		self.label_currentfile = Label(self.container_informationarea, textvariable=self.currentfile, wraplength=1200)
 		self.label_currentfile.pack(side=TOP)
 		#self.label_ocroptions = Label(self.container_informationarea, textvariable=self.ocrmypdfapioptions_info, wraplength=1500)
 		#self.label_ocroptions.pack(side=TOP)
