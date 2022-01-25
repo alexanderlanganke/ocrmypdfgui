@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
+
+from ocr import get_api_options
+from ocr import start_job
+from plugin_progressbar import ocrmypdf_progressbar_singlefile
+#from ocrmypdfgui.ocr import start_job
+#from ocrmypdfgui.ocr import get_api_options
+#from ocrmypdfgui.plugin_progressbar import ocrmypdf_progressbar_singlefile
+from pytesseract import get_languages
+import json
+import os
+import sys
+import string
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, GLib
 
 
 class HeaderBarWindow(Gtk.Window):
@@ -69,24 +81,36 @@ class HeaderBarWindow(Gtk.Window):
 		hb.pack_end(box)
 
 	#Add Output Area
-		self.box = Gtk.Box()
-		self.add(self.box)
+		grid = Gtk.Grid()
 		self.textview = Gtk.TextView()
-		self.box.pack_start(self.textview, True, True, 0)
+		self.textview.set_size_request(1200, 675)
+		grid.attach(self.textview, 1, 1, 3, 1)
 		self.textbuffer = self.textview.get_buffer()
 
-	#Init Logic
+	#Add Progress Bar Area
+		self.label_currentfile = Gtk.Label(label="Test")
+		#grid.add(self.label_currentfile)
+		grid.attach(self.label_currentfile, 1, 2, 1, 1)
+		self.progressbar = Gtk.ProgressBar()
+		#grid.add(self.progressbar)
+		grid.attach(self.progressbar, 3, 2, 1, 1)
 
+		self.add(grid)
+
+	#Init Logic
+		self.dir_path = ""
+		self.currentfile = ""
+		self.batch_progress = ""
+		self.singlefile_progress = ""
+		self.singlefile_progress_info = ""
+		self.ocrmypdfsettings = {}
+		self.ocrmypdfapioptions = get_api_options()
+		self.ocrmypdfapioptions_info = ""
+		self.load_settings()
 
 	def about_application(self, button):
 		#about page
 		dialog = Gtk.AboutDialog ()
-		#"program-name", "OCRmyPDFGui",
-		#"title", "About OCRmyPDFGui",
-		#"authors", "Alexander Langanke",
-		#"version", "1.0",
-		#"website", "https://github.com/alexanderlanganke/ocrmypdfgui"
-		#)
 		authors = ["Alexander Langanke"]
 		dialog.set_authors(authors)
 		dialog.set_program_name("OCRmyPDFGui")
@@ -94,9 +118,44 @@ class HeaderBarWindow(Gtk.Window):
 		dialog.set_comments("I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not 'official'. Feel free to use it if you like.")
 		response = dialog.run()
 
+	def increment_progress_bar(self, args, singlefile_progress, singlefile_progress_info):
+		print("increment_progress_bar")
+		print(args['total'])
+		if args['desc'] == "OCR":
+			print("OCR Running")
+			percent = float(args['unit_scale']) * 700
+			print(percent)
+			precision = float(self.singlefile_progress) + percent
+			#singlefile_progress_info.set("OCR Running")
+
+			self.singlefile_progress = precision
+		elif args['desc'] == "Scanning contents":
+			print("Scanning Contents")
+			#singlefile_progress_info.set("Scanning Contents")
+
+		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar, self.singlefile_progress, self.singlefile_progress_info)
+
 	def settings(self, button):
 		#Settings page
 		print("test")
+
+	def load_settings(self):
+		#Open Settings File
+#		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
+		if os.path.isfile(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) == True:
+
+			print("Settings found")
+#			with open(os.path.join(os.path.dirname(__file__), 'settings.ini')) as f:
+			with open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) as f:
+
+				self.ocrmypdfsettings = json.load(f)
+
+			self.ocrmypdfapioptions_info = self.dict_to_string(self.ocrmypdfsettings)
+			print("Settings Loaded")
+
+		else:
+			print("Settings not found")
+			pass
 
 	def on_click_selectpdf(self, button):
 		#What to do on click
@@ -117,7 +176,7 @@ class HeaderBarWindow(Gtk.Window):
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
 			text = dialog.get_filename()
-			self.print_to_textview(text)
+			self.dir_path = text
 		elif response == Gtk.ResponseType.CANCEL:
 			print("Cancel clicked")
 		dialog.destroy()
@@ -138,15 +197,16 @@ class HeaderBarWindow(Gtk.Window):
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
 			text = dialog.get_filename()
-			self.print_to_textview(text)
+			self.dir_path = text
+
 		elif response == Gtk.ResponseType.CANCEL:
 			print("Cancel clicked")
 		dialog.destroy()
 
 	def on_click_startocr(self, button):
 		#What to do on click
-		text = '"Click me3" button was clicked'
-		self.print_to_textview(text)
+		start_job(self.dir_path, self.currentfile, self.batch_progress, self.singlefile_progress, self.print_to_textview, self.ocrmypdfsettings)
+
 
 	def on_click_menu(self, button):
 		#What to do on click
@@ -155,15 +215,22 @@ class HeaderBarWindow(Gtk.Window):
 
 	def print_to_textview(self, text):
 		#print text to textview
-		buffer = self.textview.get_buffer()
-		startIter, endIter = buffer.get_bounds()
-		old_text = buffer.get_text(startIter, endIter, False)
-		output = old_text + text
-		self.textbuffer.set_text(output)
+		#startIter, endIter = buffer.get_bounds()
+		#old_text = self.textbuffer.get_text()
+		#text = old_text + text
+		#output = old_text + text
+		end_iter = self.textbuffer.get_end_iter()
+		self.textbuffer.insert(end_iter, text)
 
 	def clear_textview(self):
 	   #empty textview buffer
 	   self.textbuffer.set_text("")
+
+	def dict_to_string(self, dict):
+		string = ""
+		for key, value in dict.items():
+			string = string + key + "=" + str(value) + "; "
+		return string
 
 win = HeaderBarWindow()
 win.connect("destroy", Gtk.main_quit)

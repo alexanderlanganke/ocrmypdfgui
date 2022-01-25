@@ -5,42 +5,66 @@ import os
 import sys
 import warnings
 import inspect
+import gi
+import time
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gio, GLib
 
 from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
 
-def start_job(dir_path, currentfile, progressbar_batch, progressbar_singlefile, outputarea, ocrmypdfsettings):
-	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, progressbar_singlefile, outputarea, ocrmypdfsettings, currentfile), daemon=True)
+def start_job(dir_path, currentfile, progressbar_batch, progressbar_singlefile, print_to_textview, ocrmypdfsettings):
+	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, progressbar_singlefile, print_to_textview, ocrmypdfsettings, currentfile), daemon=True)
 	t.start()
 
-def ocr_run(file_path, ocrmypdfsettings):
+def ocr_run(file_path, ocrmypdfsettings, print_to_textview):
 	print(ocrmypdfsettings)
 	#runs ocrmypdf on given file
 	try:
-		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
+		print("Start OCR - " + file_path)
+		#print_to_textview(file_path + " - ")
+		GLib.idle_add(print_to_textview, file_path + " - ")
+		time.sleep(0.2)
+		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings)#, plugins=["plugin_progressbar"])
+#		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
+		GLib.idle_add(print_to_textview, "OCR complete.\n")
+		time.sleep(0.2)
+		#print_to_textview("OCR complete.\n")
+
 		print("OCR complete.\n")
 		return "OCR complete.\n"
 	except ocrmypdf.exceptions.PriorOcrFoundError:
-
+		#print_to_textview("Prior OCR - Skipping\n")
+		GLib.idle_add(print_to_textview, "Prior OCR - Skipping\n")
+		time.sleep(0.2)
 		print("Prior OCR - Skipping\n")
 		return "Prior OCR - Skipping\n"
 	except ocrmypdf.exceptions.EncryptedPdfError:
-
+		#print_to_textview("PDF File is encrypted. Skipping.\n")
+		GLib.idle_add(print_to_textview, "PDF File is encrypted. Skipping.\n")
+		time.sleep(0.2)
 		print("PDF File is encrypted. Skipping.\n")
 		return "PDF File is encrypted. Skipping.\n"
 
 	except ocrmypdf.exceptions.BadArgsError:
+		#print_to_textview("Bad arguments.\n")
+		GLib.idle_add(print_to_textview, "Bad arguments.\n")
+		time.sleep(0.2)
 		print("Bad arguments.\n")
 
 	except:
-		e = sys.exc_info()[0]
+		e = sys.exc_info()
+		#print_to_textview(e)
+		GLib.idle_add(print_to_textview, str(e))
+		time.sleep(0.2)
 		print(e)
 		return "Error.\n"
 
-def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, outputarea, ocrmypdfsettings, currentfile):
+def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, print_to_textview, ocrmypdfsettings, currentfile):
 	# walks through given path and uses OCR Function on every pdf in path
-	progressbar_batch.set(0.0)	#resets Progressbar
+	progressbar_batch = 0.0	#resets Progressbar
 	progress_precision = 0.0
 
 	if(os.path.isfile(dir_path)==True):
@@ -49,13 +73,13 @@ def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, outputarea, o
 		if file_ext == '.pdf':
 
 			print("Path:" + dir_path + "\n")
-			outputarea.insert("end", "File: " + dir_path + " - ")
-			outputarea.see("end")
-			currentfile.set("Current File:" + dir_path )
-			result = ocr_run(dir_path, ocrmypdfsettings)
-			outputarea.insert("end", result)
-			outputarea.see("end")
-			progressbar_batch.set(100)
+			#outputarea.insert("end", "File: " + dir_path + " - ")
+			#outputarea.see("end")
+			#currentfile.set("Current File:" + dir_path )
+			result = ocr_run(dir_path, ocrmypdfsettings, print_to_textview)
+			#outputarea.insert("end", result)
+			#utputarea.see("end")
+			#progressbar_batch.set(100)
 	elif(os.path.isdir(dir_path)==True):
 		number_of_files = 0
 		for dir_name, subdirs, file_list in os.walk(dir_path):
@@ -75,18 +99,18 @@ def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, outputarea, o
 					full_path = dir_name + '/' + filename
 
 					print("Path:" + full_path + "\n")
-					currentfile.set("Current File:" + full_path )
-					outputarea.insert("end", "File: " + full_path + " - ")
-					outputarea.see("end")
+					#currentfile.set("Current File:" + full_path )
+					#outputarea.insert("end", "File: " + full_path + " - ")
+					#outputarea.see("end")
 
-					result = ocr_run(full_path, ocrmypdfsettings)
-					outputarea.insert("end", result)
-					outputarea.see("end")
+					result = ocr_run(full_path, ocrmypdfsettings, print_to_textview)
+					#outputarea.insert("end", result)
+					#outputarea.see("end")
 
 					progress_precision = progress_precision + percent
 					print(progress_precision)
-					progressbar_batch.set(round(progress_precision))
-					progressbar_singlefile.set(0.0)
+					#progressbar_batch.set(round(progress_precision))
+					#progressbar_singlefile.set(0.0)
 
 	else:
 		print("Error")
