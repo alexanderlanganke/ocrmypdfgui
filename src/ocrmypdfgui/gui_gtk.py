@@ -24,6 +24,7 @@ class HeaderBarWindow(Gtk.Window):
 		self.set_border_width(10)
 		self.set_default_size(1200, 675)
 
+
 		hb = Gtk.HeaderBar()
 		hb.set_show_close_button(True)
 		hb.props.title = "OCRmyPDFGui"
@@ -82,9 +83,14 @@ class HeaderBarWindow(Gtk.Window):
 
 	#Add Output Area
 		grid = Gtk.Grid()
+		#scrolledwindow.add(grid)
 		self.textview = Gtk.TextView()
-		self.textview.set_size_request(1200, 675)
-		grid.attach(self.textview, 1, 1, 3, 1)
+		self.textview.set_size_request(1200, 600)
+		scrolledwindow = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+		#grid.add(scrolledwindow)
+		grid.attach(scrolledwindow, 1, 1, 3, 1)
+		scrolledwindow.add(self.textview)
+		#grid.attach(self.textview, 1, 1, 3, 1)
 		self.textbuffer = self.textview.get_buffer()
 
 	#Add Progress Bar Area
@@ -96,6 +102,7 @@ class HeaderBarWindow(Gtk.Window):
 		grid.attach(self.progressbar, 3, 2, 1, 1)
 
 		self.add(grid)
+		#scrolledwindow.add(grid)
 
 	#Init Logic
 		self.dir_path = ""
@@ -214,13 +221,10 @@ class HeaderBarWindow(Gtk.Window):
 		self.print_to_textview(text)
 
 	def print_to_textview(self, text):
-		#print text to textview
-		#startIter, endIter = buffer.get_bounds()
-		#old_text = self.textbuffer.get_text()
-		#text = old_text + text
-		#output = old_text + text
 		end_iter = self.textbuffer.get_end_iter()
 		self.textbuffer.insert(end_iter, text)
+		end_iter = self.textbuffer.get_end_iter()
+		self.textview.scroll_to_iter(end_iter, 0, 0, 0, 0)
 
 	def clear_textview(self):
 	   #empty textview buffer
