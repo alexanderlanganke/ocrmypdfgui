@@ -36,29 +36,11 @@ apps:
 
 
 parts:
-#  snapcraft-preload:
-#    source: https://github.com/sergiusens/snapcraft-preload.git
-#    plugin: cmake
-#    build-packages:
-#      - on amd64:
-#        - gcc-multilib
-#        - g++-multilib
-#    stage-packages:
-#      - lib32stdc++6
-
-#  tcltk-launch:
-#    plugin: nil
-#    stage-snaps: [tcltk-launch]
-#
-#  debian-multiarch-triplet-provider-launch:
-#    plugin: nil
-#    stage-snaps: [debian-multiarch-triplet-provider-launch]
-
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
     source: .
-    stage-packages: [python3-gi, ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
+    stage-packages: [ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
 
     python-packages:
       - ocrmypdf
