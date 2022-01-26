@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-#from ocr import get_api_options
-#from ocr import start_job
-#from plugin_progressbar import ocrmypdf_progressbar_singlefile
-from ocrmypdfgui.ocr import start_job
-from ocrmypdfgui.ocr import get_api_options
-from ocrmypdfgui.plugin_progressbar import ocrmypdf_progressbar_singlefile
+from ocr import get_api_options
+from ocr import start_job
+from plugin_progressbar import ocrmypdf_progressbar_singlefile
+#from ocrmypdfgui.ocr import start_job
+#from ocrmypdfgui.ocr import get_api_options
+#from ocrmypdfgui.plugin_progressbar import ocrmypdf_progressbar_singlefile
 from pytesseract import get_languages
 import json
 import os
@@ -409,9 +409,8 @@ class SettingsWindow(Gtk.Window):
 
 		self.main.save_settings()
 
-def run():
-	win = MainWindow()
-	win.connect("destroy", Gtk.main_quit)
-	win.show_all()
-	win.stop_ocr_button.hide()
-	Gtk.main()
+win = MainWindow()
+win.connect("destroy", Gtk.main_quit)
+win.show_all()
+win.stop_ocr_button.hide()
+Gtk.main()

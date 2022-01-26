@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 from ocrmypdf import hookimpl
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gio, GLib
 
 class ocrmypdf_progressbar_singlefile:
 
@@ -31,7 +34,7 @@ class ocrmypdf_progressbar_singlefile:
 
     def update(self, _arg=None):
         print("Updating")
-        self.callback(self.args, self.singlefile_progress, self.singlefile_progress_info)
+        GLib.idle_add(lambda: self.callback(self.args, self.singlefile_progress, self.singlefile_progress_info))
         return
 
 
