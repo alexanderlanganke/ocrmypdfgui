@@ -26,8 +26,8 @@ def ocr_run(file_path, ocrmypdfsettings, print_to_textview):
 	#runs ocrmypdf on given file
 	try:
 		print("Start OCR - " + file_path)
-		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar"])
-#		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
+#		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar"])
+		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
 		GLib.idle_add(print_to_textview, "OCR complete.\n")
 
 		print("OCR complete.\n")
@@ -50,6 +50,7 @@ def ocr_run(file_path, ocrmypdfsettings, print_to_textview):
 	except:
 		e = sys.exc_info()
 		GLib.idle_add(print_to_textview, str(e))
+		GLib.idle_add(print_to_textview, "\n")
 		#time.sleep(0.2)
 		print(e)
 		return "Error.\n"
