@@ -11,16 +11,17 @@ confinement: strict # use 'strict' once you have the right plugs and slots
 
 architectures: [amd64]
 
-environment:
-    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
-    GS_LIB: $SNAP/usr/share/ghostscript/9.26/Resource/Init
-    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.26/Resource/Font
-    LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
-    PYTHONPATH: $PYTHONPATH:$SNAP_DESKTOP_RUNTIME/usr/lib/python3.6/site-packages:$SNAP/usr/lib/python3.6/site-packages:$SNAP/lib/python3.6/site-packages
+plugs:
+	gnome-3-32-1804:
+    interface: content
+    target: $SNAP/gnome-platform
+    default-provider: gnome-3-32-1804
+
 apps:
   ocrmypdfgui:
     #command: bin/snapcraft-preload python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
-    command: python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
+    #command: python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
+    command: bin/desktop-launch $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
     #command-chain: [bin/debian-multiarch-triplet-provider-launch, bin/tcltk-launch]
     desktop: $SNAPCRAFT_PROJECT_DIR/gui/ocrmypdfgui.desktop
     extensions: [gnome-3-34]
@@ -28,16 +29,41 @@ apps:
     plugs:
       - desktop
       - desktop-legacy
-      - unity7
       - wayland
       - x11
       - home
       - removable-media
 
+		environment:
+		    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
+		    GS_LIB: $SNAP/usr/share/ghostscript/9.26/Resource/Init
+		    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.26/Resource/Font
+		    LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
+		    PYTHONPATH: $PYTHONPATH:$SNAP_DESKTOP_RUNTIME/usr/lib/python3.6/site-packages:$SNAP/usr/lib/python3.6/site-packages:$SNAP/lib/python3.6/site-packages
+
 
 parts:
+  desktop-gnome-platform:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-depth: 1
+    source-subdir: gtk
+    plugin: make
+    make-parameters: [ "FLAVOR=gtk3" ]
+    build-environment: &buildenv
+      - PATH: /snap/gnome-3-32-1804-sdk/current/usr/bin:$PATH
+      - XDG_DATA_DIRS: /snap/gnome-3-32-1804-sdk/current/usr/share:/usr/share:$XDG_DATA_DIRS
+      - LD_LIBRARY_PATH: /snap/gnome-3-32-1804-sdk/current/lib/$SNAPCRAFT_ARCH_TRIPLET:/snap/gnome-3-32-1804-sdk/current/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:/snap/gnome-3-32-1804-sdk/current/usr/lib:/snap/gnome-3-32-1804-sdk/current/usr/lib/vala-current:$LD_LIBRARY_PATH
+      - PKG_CONFIG_PATH: /snap/gnome-3-32-1804-sdk/current/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pkgconfig:/snap/gnome-3-32-1804-sdk/current/usr/lib/pkgconfig:/snap/gnome-3-32-1804-sdk/current/usr/share/pkgconfig:$PKG_CONFIG_PATH
+      - GETTEXTDATADIRS: /snap/gnome-3-32-1804-sdk/current/usr/share/gettext-current:$GETTEXTDATADIRS
+      - GDK_PIXBUF_MODULE_FILE: /snap/gnome-3-32-1804-sdk/current/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gdk-pixbuf-current/loaders.cache
+    build-snaps: [ gnome-3-32-1804-sdk ]
+    override-build: |
+      snapcraftctl build
+      mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
+
   ocrmypdfgui:
     # See 'snapcraft plugins'
+		after:[desktop-gnome-platform]
     plugin: python
     source: .
     stage-packages: [ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
