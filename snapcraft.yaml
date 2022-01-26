@@ -19,7 +19,7 @@ environment:
 
 apps:
   ocrmypdfgui:
-    command: bin/desktop-launch $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py #python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
+    command: python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py #python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
     desktop: $SNAPCRAFT_PROJECT_DIR/gui/ocrmypdfgui.desktop
     extensions: [gnome-3-34]
 
