@@ -11,11 +11,11 @@ import json
 import os
 import sys
 import string
-import time
+from pathlib import Path
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gio, GLib
+from gi.repository import Gtk, Gio, GLib, GdkPixbuf
 
 
 class MainWindow(Gtk.Window):
@@ -108,32 +108,13 @@ class MainWindow(Gtk.Window):
 		self.dir_path = ""
 		self.singlefile_progress = 0
 		self.ocrmypdfsettings = {}
-		self.ocrmypdfapioptions = get_api_options()
-		self.ocrmypdfapioptions_info = {}
 		self.load_settings()
 
 
-		def increment_progress_bar(self, args, singlefile_progress, singlefile_progress_info):
-			print("increment_progress_bar")
-			print(args['total'])
-			print(args)
-			#singlefile_progress_info.set_text(str(args['desc']))
+		def update_label_singlefile_progress_info(self, args, singlefile_progress, singlefile_progress_info):
+			singlefile_progress_info.set_text(str(args['desc']))
 
-			if args['desc'] == "OCR":
-				print("OCR Running")
-				#percent = float(args['unit_scale']) * 100
-			#	print(percent)
-			#	precision = float(self.singlefile_progress) + percent
-				singlefile_progress_info.set_text("OCR Running")
-
-			#	self.singlefile_progress = precision
-			#	if (self.singlefile_progress == 100):
-			#		singlefile_progress_info.set_text("Idle")
-			elif args['desc'] == "Scanning contents":
-				print("Scanning Contents")
-				singlefile_progress_info.set_text("Scanning Contents")
-
-		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar, self.singlefile_progress, self.label_currentfile)
+		ocrmypdf_progressbar_singlefile.set_callback(update_label_singlefile_progress_info, self.singlefile_progress, self.label_currentfile)
 
 	def increment_progress_bar_batch(self, step):
 		print("increment_progress_bar_batch to: " + str(step))
@@ -141,9 +122,11 @@ class MainWindow(Gtk.Window):
 
 	def about_application(self, button):
 		#about page
-		dialog = Gtk.AboutDialog ()
+		dialog = Gtk.AboutDialog()
+		logo = GdkPixbuf.Pixbuf.new_from_file ("../../gui/ocrmypdfgui.png")
 		authors = ["Alexander Langanke"]
 		dialog.set_authors(authors)
+		dialog.set_logo(logo)
 		dialog.set_program_name("OCRmyPDFGui")
 		dialog.set_website("https://github.com/alexanderlanganke/ocrmypdfgui")
 		dialog.set_comments("I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not 'official'. Feel free to use it if you like.")
@@ -151,8 +134,7 @@ class MainWindow(Gtk.Window):
 
 	def settings(self, button):
 		#Settings page
-		print("test")
-		settings_window = SettingsWindow(self.ocrmypdfsettings)
+		settings_window = SettingsWindow(self)#self.ocrmypdfsettings, self.save_settings)
 		settings_window.show_all()
 
 	def load_settings(self):
@@ -166,12 +148,44 @@ class MainWindow(Gtk.Window):
 
 				self.ocrmypdfsettings = json.load(f)
 
-			self.ocrmypdfapioptions_info = self.dict_to_string(self.ocrmypdfsettings)
+			#self.ocrmypdfapioptions_info = self.dict_to_string(self.ocrmypdfsettings)
 			print("Settings Loaded")
 
 		else:
 			print("Settings not found")
 			pass
+
+	def save_settings(self):
+		print("savefunction")
+		print(self.ocrmypdfsettings)
+
+		try:
+#			json.dump(settings, open(os.path.join(os.path.dirname(__file__), 'settings.ini'), "w"))
+			Path(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui')).mkdir(parents=True, exist_ok=True)
+			json.dump(self.ocrmypdfsettings, open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini'), "w"))
+
+			print("Saved")
+		except:
+			print("Error Saving to file.")
+			#self.on_error_clicked("Error Saving.", "Settings could not be saved to disk.")
+		self.load_settings()
+
+	def on_error_clicked(self, message, secondary_text):
+		print("error")
+		dialog = Gtk.MessageDialog(
+			transient_for=self,
+			flags=0,
+			message_type=Gtk.MessageType.ERROR,
+			buttons=Gtk.ButtonsType.CANCEL,
+			text=message,
+		)
+		dialog.format_secondary_text(
+			secondary_text
+		)
+		dialog.run()
+		print("ERROR dialog closed")
+
+		dialog.destroy()
 
 	def on_click_selectpdf(self, button):
 		#What to do on click
@@ -221,15 +235,14 @@ class MainWindow(Gtk.Window):
 
 	def on_click_startocr(self, button):
 		#What to do on click
-		self.start_ocr_button.hide()
-		self.stop_ocr_button.show()
+		#self.start_ocr_button.hide()
+		#self.stop_ocr_button.show()
 		self.ocr = start_job(self.dir_path, self.increment_progress_bar_batch, self.print_to_textview, self.ocrmypdfsettings)
-
 
 	def on_click_stopocr(self, button):
 		print("stop ocr")
-		self.start_ocr_button.show()
-		self.stop_ocr_button.hide()
+		#self.start_ocr_button.show()
+		#self.stop_ocr_button.hide()
 		#self.ocr.join()
 
 	def on_click_menu(self, button):
@@ -254,11 +267,17 @@ class MainWindow(Gtk.Window):
 		return string
 
 class SettingsWindow(Gtk.Window):
-	def __init__(self, ocrmypdfsettings ):
+	def __init__(self, main):#ocrmypdfsettings, save_settings):
+		#Init Logic
+		#self.ocrmypdfsettings = ocrmypdfsettings
+		#self.save_settings = save_settings
+		self.ocrmypdflanguages = get_languages()
+		self.main = main
+		#Build Window
 		Gtk.Window.__init__(self, title="Settings")
 		self.notebook = Gtk.Notebook()
 		self.add(self.notebook)
-		print(ocrmypdfsettings)
+		print(self.main.ocrmypdfsettings)
 
 		#Page 1 - Options
 		self.page1 = Gtk.Box()
@@ -268,62 +287,68 @@ class SettingsWindow(Gtk.Window):
 		#Rotate Pages
 		label1_page1 = Gtk.Label(label="Rotate Pages")
 		grid_page1.attach(label1_page1, 1, 1, 1, 1)
-		switch1_page1 = Gtk.Switch()
-		if(ocrmypdfsettings["rotate_pages"] == True):
-			switch1_page1.set_active(True)
+		self.switch1_page1 = Gtk.Switch()
+		if(self.main.ocrmypdfsettings["rotate_pages"] == True):
+			self.switch1_page1.set_active(True)
 		else:
-			switch1_page1.set_active(False)
-		grid_page1.attach(switch1_page1, 2, 1, 1, 1)
+			self.switch1_page1.set_active(False)
+		self.switch1_page1.connect("notify::active", self.save_state)
+		grid_page1.attach(self.switch1_page1, 2, 1, 1, 1)
 
 		#Remove Background
 		label2_page1 = Gtk.Label(label="Remove Background")
 		grid_page1.attach(label2_page1, 1, 2, 1, 1)
-		switch2_page1 = Gtk.Switch()
-		if(ocrmypdfsettings["remove_background"] == True):
-			switch2_page1.set_active(True)
+		self.switch2_page1 = Gtk.Switch()
+		if(self.main.ocrmypdfsettings["remove_background"] == True):
+			self.switch2_page1.set_active(True)
 		else:
-			switch2_page1.set_active(False)
-		grid_page1.attach(switch2_page1, 2, 2, 1, 1)
+			self.switch2_page1.set_active(False)
+		self.switch2_page1.connect("notify::active", self.save_state)
+		grid_page1.attach(self.switch2_page1, 2, 2, 1, 1)
 
 		#Deskew
 		label3_page1 = Gtk.Label(label="Deskew")
 		grid_page1.attach(label3_page1, 1, 3, 1, 1)
-		switch3_page1 = Gtk.Switch()
-		if(ocrmypdfsettings["deskew"] == True):
-			switch3_page1.set_active(True)
+		self.switch3_page1 = Gtk.Switch()
+		if(self.main.ocrmypdfsettings["deskew"] == True):
+			self.switch3_page1.set_active(True)
 		else:
-			switch3_page1.set_active(False)
-		grid_page1.attach(switch3_page1, 2, 3, 1, 1)
+			self.switch3_page1.set_active(False)
+		self.switch3_page1.connect("notify::active", self.save_state)
+		grid_page1.attach(self.switch3_page1, 2, 3, 1, 1)
 
 		#Clean
 		label4_page1 = Gtk.Label(label="Clean")
 		grid_page1.attach(label4_page1, 1, 4, 1, 1)
-		switch4_page1 = Gtk.Switch()
-		if(ocrmypdfsettings["clean"] == True):
-			switch4_page1.set_active(True)
+		self.switch4_page1 = Gtk.Switch()
+		if(self.main.ocrmypdfsettings["clean"] == True):
+			self.switch4_page1.set_active(True)
 		else:
-			switch4_page1.set_active(False)
-		grid_page1.attach(switch4_page1, 2, 4, 1, 1)
+			self.switch4_page1.set_active(False)
+		self.switch4_page1.connect("notify::active", self.save_state)
+		grid_page1.attach(self.switch4_page1, 2, 4, 1, 1)
 
 		#Force OCR
 		label5_page1 = Gtk.Label(label="Force OCR")
 		grid_page1.attach(label5_page1, 1, 5, 1, 1)
-		switch5_page1 = Gtk.Switch()
-		if(ocrmypdfsettings["force_ocr"] == True):
-			switch5_page1.set_active(True)
+		self.switch5_page1 = Gtk.Switch()
+		if(self.main.ocrmypdfsettings["force_ocr"] == True):
+			self.switch5_page1.set_active(True)
 		else:
-			switch5_page1.set_active(False)
-		grid_page1.attach(switch5_page1, 2, 5, 1, 1)
+			self.switch5_page1.set_active(False)
+		self.switch5_page1.connect("notify::active", self.save_state)
+		grid_page1.attach(self.switch5_page1, 2, 5, 1, 1)
 
 		#Skip Text
 		label6_page1 = Gtk.Label(label="Skip Text")
 		grid_page1.attach(label6_page1, 1, 6, 1, 1)
-		switch6_page1 = Gtk.Switch()
-		if(ocrmypdfsettings["skip_text"] == True):
-			switch6_page1.set_active(True)
+		self.switch6_page1 = Gtk.Switch()
+		if(self.main.ocrmypdfsettings["skip_text"] == True):
+			self.switch6_page1.set_active(True)
 		else:
-			switch6_page1.set_active(False)
-		grid_page1.attach(switch6_page1, 2, 6, 1, 1)
+			self.switch6_page1.set_active(False)
+		self.switch6_page1.connect("notify::active", self.save_state)
+		grid_page1.attach(self.switch6_page1, 2, 6, 1, 1)
 
 
 		self.page1.add(grid_page1)
@@ -334,24 +359,55 @@ class SettingsWindow(Gtk.Window):
 		#Page 2 - Languages
 		self.page2 = Gtk.Box()
 		self.page2.set_border_width(10)
-		self.page2.add(Gtk.Label(label="Languages"))
+		grid_page2 = Gtk.Grid()
+
+		#Button English
+		self.button_eng = Gtk.ToggleButton(label="English")
+		grid_page2.attach(self.button_eng, 1, 1, 1, 1)
+		if("eng" in self.main.ocrmypdfsettings["language"]):
+			self.button_eng.set_active(True)
+		else:
+			self.button_eng.set_active(False)
+		self.button_eng.connect("notify::active", self.save_state)
+
+		#Button German
+		self.button_deu = Gtk.ToggleButton(label="German")
+		grid_page2.attach(self.button_deu, 1, 2, 1, 1)
+		if("deu" in self.main.ocrmypdfsettings["language"]):
+			self.button_deu.set_active(True)
+		else:
+			self.button_deu.set_active(False)
+		self.button_deu.connect("notify::active", self.save_state)
+
+		print(self.ocrmypdflanguages)
 
 
-
+		self.page2.add(grid_page2)
 		self.notebook.append_page(self.page2, Gtk.Label(label="Languages"))#Add and Define Label of Page
 
 
+	def save_state(self, switch, gparam):
+		#save state of widgets to settings
+		print("save state")
+		#Switches
+		self.main.ocrmypdfsettings['rotate_pages'] = self.switch1_page1.get_active()
+		self.main.ocrmypdfsettings['remove_background'] = self.switch2_page1.get_active()
+		self.main.ocrmypdfsettings['deskew'] = self.switch3_page1.get_active()
+		self.main.ocrmypdfsettings['clean'] = self.switch4_page1.get_active()
+		self.main.ocrmypdfsettings['force_ocr'] = self.switch5_page1.get_active()
+		self.main.ocrmypdfsettings['skip_text'] = self.switch6_page1.get_active()
 
+		#languages
+		languages = []
+		if(self.button_eng.get_active()):
+			languages.append("eng")
+		if(self.button_deu.get_active()):
+			languages.append("deu")
+		self.main.ocrmypdfsettings['language'] = languages
 
-		#Build Window
-		#grid = Gtk.Grid()
-		#test_label = Gtk.Label(label="Settings")
-		#grid.attach(test_label, 1, 1, 1, 1)
-		#self.add(grid)
+		print(self.main.ocrmypdfsettings)
 
-		#Init Logic
-
-
+		self.main.save_settings()
 
 win = MainWindow()
 win.connect("destroy", Gtk.main_quit)
