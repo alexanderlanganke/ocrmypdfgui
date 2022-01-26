@@ -1,7 +1,7 @@
 name: ocrmypdfgui # you probably want to 'snapcraft register <name>'
 title: ocrmypdfgui
 base: core18 # the base snap is the execution environment for this snap
-version: '0.9.02' # just for humans, typically '1.2+git' or '1.3.2'
+version: '0.9.03' # just for humans, typically '1.2+git' or '1.3.2'
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
