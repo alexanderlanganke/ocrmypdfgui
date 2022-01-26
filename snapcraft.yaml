@@ -16,7 +16,7 @@ environment:
     GS_LIB: $SNAP/usr/share/ghostscript/9.26/Resource/Init
     GS_FONTPATH: $SNAP/usr/share/ghostscript/9.26/Resource/Font
     LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
-    PYTHONPATH: $SNAP_DESKTOP_RUNTIME/usr/lib/python3.6/site-packages
+    PYTHONPATH: $PYTHONPATH:$SNAP_DESKTOP_RUNTIME/usr/lib/python3.6/site-packages:$SNAP/usr/lib/python3.6/site-packages:$SNAP/lib/python3.6/site-packages
 apps:
   ocrmypdfgui:
     #command: bin/snapcraft-preload python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
