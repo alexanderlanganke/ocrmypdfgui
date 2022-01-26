@@ -11,19 +11,19 @@ import json
 import os
 import sys
 import string
+import time
 import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gio, GLib
 
 
-class HeaderBarWindow(Gtk.Window):
+class MainWindow(Gtk.Window):
 	def __init__(self):
 	#Build Window
 		super().__init__(title="OCRmyPDFGui")
 		self.set_border_width(10)
 		self.set_default_size(1200, 675)
-
 
 		hb = Gtk.HeaderBar()
 		hb.set_show_close_button(True)
@@ -54,9 +54,14 @@ class HeaderBarWindow(Gtk.Window):
 		Gtk.StyleContext.add_class(box.get_style_context(), "linked")
 
 	#Add Start OCR Button
-		button = Gtk.Button.new_with_label("Start OCR")
-		button.connect("clicked", self.on_click_startocr)
-		box.add(button)
+		self.start_ocr_button = Gtk.Button.new_with_label("Start OCR")
+		self.start_ocr_button.connect("clicked", self.on_click_startocr)
+		box.add(self.start_ocr_button)
+
+		self.stop_ocr_button = Gtk.Button.new_with_label("Stop OCR")
+		self.stop_ocr_button.connect("clicked", self.on_click_stopocr)
+		box.add(self.stop_ocr_button)
+
 
 	#Add Hamburger Menu
 		settings_selection = Gtk.ModelButton(label="Settings")
@@ -83,37 +88,55 @@ class HeaderBarWindow(Gtk.Window):
 
 	#Add Output Area
 		grid = Gtk.Grid()
-		#scrolledwindow.add(grid)
 		self.textview = Gtk.TextView()
 		self.textview.set_size_request(1200, 600)
 		scrolledwindow = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
-		#grid.add(scrolledwindow)
 		grid.attach(scrolledwindow, 1, 1, 3, 1)
 		scrolledwindow.add(self.textview)
-		#grid.attach(self.textview, 1, 1, 3, 1)
 		self.textbuffer = self.textview.get_buffer()
 
 	#Add Progress Bar Area
-		self.label_currentfile = Gtk.Label(label="Test")
-		#grid.add(self.label_currentfile)
+		self.label_currentfile = Gtk.Label(label="Idle")
 		grid.attach(self.label_currentfile, 1, 2, 1, 1)
 		self.progressbar = Gtk.ProgressBar()
-		#grid.add(self.progressbar)
 		grid.attach(self.progressbar, 3, 2, 1, 1)
 
 		self.add(grid)
-		#scrolledwindow.add(grid)
 
 	#Init Logic
+		self.ocr = None
 		self.dir_path = ""
-		self.currentfile = ""
-		self.batch_progress = ""
-		self.singlefile_progress = ""
-		self.singlefile_progress_info = ""
+		self.singlefile_progress = 0
 		self.ocrmypdfsettings = {}
 		self.ocrmypdfapioptions = get_api_options()
 		self.ocrmypdfapioptions_info = ""
 		self.load_settings()
+
+		def increment_progress_bar(self, args, singlefile_progress, singlefile_progress_info):
+			print("increment_progress_bar")
+			print(args['total'])
+			print(args)
+			#singlefile_progress_info.set_text(str(args['desc']))
+
+			if args['desc'] == "OCR":
+				print("OCR Running")
+				#percent = float(args['unit_scale']) * 100
+			#	print(percent)
+			#	precision = float(self.singlefile_progress) + percent
+				singlefile_progress_info.set_text("OCR Running")
+
+			#	self.singlefile_progress = precision
+			#	if (self.singlefile_progress == 100):
+			#		singlefile_progress_info.set_text("Idle")
+			elif args['desc'] == "Scanning contents":
+				print("Scanning Contents")
+				singlefile_progress_info.set_text("Scanning Contents")
+
+		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar, self.singlefile_progress, self.label_currentfile)
+
+	def increment_progress_bar_batch(self, step):
+		print("increment_progress_bar_batch to: " + str(step))
+		self.progressbar.set_fraction(step)
 
 	def about_application(self, button):
 		#about page
@@ -125,26 +148,11 @@ class HeaderBarWindow(Gtk.Window):
 		dialog.set_comments("I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not 'official'. Feel free to use it if you like.")
 		response = dialog.run()
 
-	def increment_progress_bar(self, args, singlefile_progress, singlefile_progress_info):
-		print("increment_progress_bar")
-		print(args['total'])
-		if args['desc'] == "OCR":
-			print("OCR Running")
-			percent = float(args['unit_scale']) * 700
-			print(percent)
-			precision = float(self.singlefile_progress) + percent
-			#singlefile_progress_info.set("OCR Running")
-
-			self.singlefile_progress = precision
-		elif args['desc'] == "Scanning contents":
-			print("Scanning Contents")
-			#singlefile_progress_info.set("Scanning Contents")
-
-		ocrmypdf_progressbar_singlefile.set_callback(increment_progress_bar, self.singlefile_progress, self.singlefile_progress_info)
-
 	def settings(self, button):
 		#Settings page
 		print("test")
+		settings_window = SettingsWindow()
+		settings_window.show_all()
 
 	def load_settings(self):
 		#Open Settings File
@@ -212,8 +220,16 @@ class HeaderBarWindow(Gtk.Window):
 
 	def on_click_startocr(self, button):
 		#What to do on click
-		start_job(self.dir_path, self.currentfile, self.batch_progress, self.singlefile_progress, self.print_to_textview, self.ocrmypdfsettings)
+		self.start_ocr_button.hide()
+		self.stop_ocr_button.show()
+		self.ocr = start_job(self.dir_path, self.increment_progress_bar_batch, self.singlefile_progress, self.print_to_textview, self.ocrmypdfsettings)
 
+
+	def on_click_stopocr(self, button):
+		print("stop ocr")
+		self.start_ocr_button.show()
+		self.stop_ocr_button.hide()
+		#self.ocr.join()
 
 	def on_click_menu(self, button):
 		#What to do on click
@@ -236,7 +252,23 @@ class HeaderBarWindow(Gtk.Window):
 			string = string + key + "=" + str(value) + "; "
 		return string
 
-win = HeaderBarWindow()
+class SettingsWindow(Gtk.Window):
+	def __init__(self):
+		#Build Window
+		Gtk.Window.__init__(self, title="Settings")
+		self.set_default_size(500,300)
+		self.set_border_width(30)
+		grid = Gtk.Grid()
+		test_label = Gtk.Label(label="Settings")
+		grid.attach(test_label, 1, 1, 1, 1)
+		self.add(grid)
+
+		#Init Logic
+
+
+
+win = MainWindow()
 win.connect("destroy", Gtk.main_quit)
 win.show_all()
+win.stop_ocr_button.hide()
 Gtk.main()

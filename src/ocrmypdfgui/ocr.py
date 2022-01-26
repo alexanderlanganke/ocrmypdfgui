@@ -15,50 +15,54 @@ from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
 
-def start_job(dir_path, currentfile, progressbar_batch, progressbar_singlefile, print_to_textview, ocrmypdfsettings):
-	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, progressbar_singlefile, print_to_textview, ocrmypdfsettings, currentfile), daemon=True)
+def start_job(dir_path, progressbar_batch, progressbar_singlefile, print_to_textview, ocrmypdfsettings):
+	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, progressbar_singlefile, print_to_textview, ocrmypdfsettings), daemon=True)
 	t.start()
+	return t
 
 def ocr_run(file_path, ocrmypdfsettings, print_to_textview):
 	print(ocrmypdfsettings)
 	#runs ocrmypdf on given file
 	try:
 		print("Start OCR - " + file_path)
-		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings)#, plugins=["plugin_progressbar"])
+		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar"])
 #		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
 		GLib.idle_add(print_to_textview, "OCR complete.\n")
-		time.sleep(0.2)
+		#time.sleep(0.2)
 
 		print("OCR complete.\n")
 		return "OCR complete.\n"
+
 	except ocrmypdf.exceptions.PriorOcrFoundError:
 		GLib.idle_add(print_to_textview, "Prior OCR - Skipping\n")
-		time.sleep(0.2)
+		#time.sleep(0.2)
 		print("Prior OCR - Skipping\n")
 		return "Prior OCR - Skipping\n"
+
 	except ocrmypdf.exceptions.EncryptedPdfError:
 		GLib.idle_add(print_to_textview, "PDF File is encrypted. Skipping.\n")
-		time.sleep(0.2)
+		#time.sleep(0.2)
 		print("PDF File is encrypted. Skipping.\n")
 		return "PDF File is encrypted. Skipping.\n"
 
 	except ocrmypdf.exceptions.BadArgsError:
 		GLib.idle_add(print_to_textview, "Bad arguments.\n")
-		time.sleep(0.2)
+		#time.sleep(0.2)
 		print("Bad arguments.\n")
 
 	except:
 		e = sys.exc_info()
 		GLib.idle_add(print_to_textview, str(e))
-		time.sleep(0.2)
+		#time.sleep(0.2)
 		print(e)
 		return "Error.\n"
 
-def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, print_to_textview, ocrmypdfsettings, currentfile):
+def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, print_to_textview, ocrmypdfsettings):
 	# walks through given path and uses OCR Function on every pdf in path
-	progressbar_batch = 0.0	#resets Progressbar
+	GLib.idle_add(progressbar_batch, 0.0) #resets progressbar_batch
+	#time.sleep(0.2)
 	progress_precision = 0.0
-
+	percent_step = 0.0
 	if(os.path.isfile(dir_path)==True):
 		#Run OCR on single file
 		file_ext = os.path.splitext(dir_path)[1]
@@ -66,11 +70,11 @@ def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, print_to_text
 
 			print("Path:" + dir_path + "\n")
 			GLib.idle_add(print_to_textview, "File: " + dir_path + " - ")
-			time.sleep(0.2)
+			#time.sleep(0.2)
 			#currentfile.set("Current File:" + dir_path )
 			result = ocr_run(dir_path, ocrmypdfsettings, print_to_textview)
-
-			#progressbar_batch.set(100)
+			GLib.idle_add(progressbar_batch, 1.0) #Sets progressbar_batch to 100%
+			#time.sleep(0.2)
 	elif(os.path.isdir(dir_path)==True):
 		number_of_files = 0
 		for dir_name, subdirs, file_list in os.walk(dir_path):
@@ -80,7 +84,8 @@ def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, print_to_text
 					number_of_files=number_of_files+1
 
 			if number_of_files >0:
-				percent = 100/number_of_files
+				percent_step = 1/number_of_files	#1 = 100%
+				print("percent_step: " + str(percent_step) + " - " + "number_of_files: " + str(number_of_files))
 		for dir_name, subdirs, file_list in os.walk(dir_path):
 			print(file_list)
 
@@ -91,13 +96,16 @@ def batch_ocr(dir_path, progressbar_batch, progressbar_singlefile, print_to_text
 
 					print("Path:" + full_path + "\n")
 					GLib.idle_add(print_to_textview, "File: " + full_path + " - ")
-					time.sleep(0.2)
+					#time.sleep(0.2)
 					result = ocr_run(full_path, ocrmypdfsettings, print_to_textview)
-
-					progress_precision = progress_precision + percent
+					progress_precision = progress_precision + percent_step #necessary to hit 100 by incrementing
 					print(progress_precision)
-					#progressbar_batch.set(round(progress_precision))
-					#progressbar_singlefile.set(0.0)
+					#progressbar_batch = round(progress_precision)
+					GLib.idle_add(progressbar_batch, progress_precision) #sets progressbar_batch to current progress
+					#time.sleep(0.2)
+					progressbar_singlefile =0.0
+					print(progressbar_singlefile)
+
 
 	else:
 		print("Error")
