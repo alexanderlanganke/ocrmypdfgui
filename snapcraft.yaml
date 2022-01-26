@@ -12,7 +12,7 @@ confinement: strict # use 'strict' once you have the right plugs and slots
 architectures: [amd64]
 
 plugs:
-	gnome-3-32-1804:
+  gnome-3-32-1804:
     interface: content
     target: $SNAP/gnome-platform
     default-provider: gnome-3-32-1804
@@ -34,12 +34,12 @@ apps:
       - home
       - removable-media
 
-		environment:
-		    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
-		    GS_LIB: $SNAP/usr/share/ghostscript/9.26/Resource/Init
-		    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.26/Resource/Font
-		    LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
-		    PYTHONPATH: $PYTHONPATH:$SNAP_DESKTOP_RUNTIME/usr/lib/python3.6/site-packages:$SNAP/usr/lib/python3.6/site-packages:$SNAP/lib/python3.6/site-packages
+    environment:
+       TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
+       GS_LIB: $SNAP/usr/share/ghostscript/9.26/Resource/Init
+       GS_FONTPATH: $SNAP/usr/share/ghostscript/9.26/Resource/Font
+       LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
+       PYTHONPATH: $PYTHONPATH:$SNAP_DESKTOP_RUNTIME/usr/lib/python3.6/site-packages:$SNAP/usr/lib/python3.6/site-packages:$SNAP/lib/python3.6/site-packages
 
 
 parts:
@@ -63,7 +63,7 @@ parts:
 
   ocrmypdfgui:
     # See 'snapcraft plugins'
-		after:[desktop-gnome-platform]
+    after:[desktop-gnome-platform]
     plugin: python
     source: .
     stage-packages: [ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
