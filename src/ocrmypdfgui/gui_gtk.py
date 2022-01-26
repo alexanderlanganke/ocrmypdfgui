@@ -109,8 +109,9 @@ class MainWindow(Gtk.Window):
 		self.singlefile_progress = 0
 		self.ocrmypdfsettings = {}
 		self.ocrmypdfapioptions = get_api_options()
-		self.ocrmypdfapioptions_info = ""
+		self.ocrmypdfapioptions_info = {}
 		self.load_settings()
+
 
 		def increment_progress_bar(self, args, singlefile_progress, singlefile_progress_info):
 			print("increment_progress_bar")
@@ -151,7 +152,7 @@ class MainWindow(Gtk.Window):
 	def settings(self, button):
 		#Settings page
 		print("test")
-		settings_window = SettingsWindow()
+		settings_window = SettingsWindow(self.ocrmypdfsettings)
 		settings_window.show_all()
 
 	def load_settings(self):
@@ -222,7 +223,7 @@ class MainWindow(Gtk.Window):
 		#What to do on click
 		self.start_ocr_button.hide()
 		self.stop_ocr_button.show()
-		self.ocr = start_job(self.dir_path, self.increment_progress_bar_batch, self.singlefile_progress, self.print_to_textview, self.ocrmypdfsettings)
+		self.ocr = start_job(self.dir_path, self.increment_progress_bar_batch, self.print_to_textview, self.ocrmypdfsettings)
 
 
 	def on_click_stopocr(self, button):
@@ -253,15 +254,100 @@ class MainWindow(Gtk.Window):
 		return string
 
 class SettingsWindow(Gtk.Window):
-	def __init__(self):
-		#Build Window
+	def __init__(self, ocrmypdfsettings ):
 		Gtk.Window.__init__(self, title="Settings")
-		self.set_default_size(500,300)
-		self.set_border_width(30)
-		grid = Gtk.Grid()
-		test_label = Gtk.Label(label="Settings")
-		grid.attach(test_label, 1, 1, 1, 1)
-		self.add(grid)
+		self.notebook = Gtk.Notebook()
+		self.add(self.notebook)
+		print(ocrmypdfsettings)
+
+		#Page 1 - Options
+		self.page1 = Gtk.Box()
+		self.page1.set_border_width(10)
+		grid_page1 = Gtk.Grid()
+
+		#Rotate Pages
+		label1_page1 = Gtk.Label(label="Rotate Pages")
+		grid_page1.attach(label1_page1, 1, 1, 1, 1)
+		switch1_page1 = Gtk.Switch()
+		if(ocrmypdfsettings["rotate_pages"] == True):
+			switch1_page1.set_active(True)
+		else:
+			switch1_page1.set_active(False)
+		grid_page1.attach(switch1_page1, 2, 1, 1, 1)
+
+		#Remove Background
+		label2_page1 = Gtk.Label(label="Remove Background")
+		grid_page1.attach(label2_page1, 1, 2, 1, 1)
+		switch2_page1 = Gtk.Switch()
+		if(ocrmypdfsettings["remove_background"] == True):
+			switch2_page1.set_active(True)
+		else:
+			switch2_page1.set_active(False)
+		grid_page1.attach(switch2_page1, 2, 2, 1, 1)
+
+		#Deskew
+		label3_page1 = Gtk.Label(label="Deskew")
+		grid_page1.attach(label3_page1, 1, 3, 1, 1)
+		switch3_page1 = Gtk.Switch()
+		if(ocrmypdfsettings["deskew"] == True):
+			switch3_page1.set_active(True)
+		else:
+			switch3_page1.set_active(False)
+		grid_page1.attach(switch3_page1, 2, 3, 1, 1)
+
+		#Clean
+		label4_page1 = Gtk.Label(label="Clean")
+		grid_page1.attach(label4_page1, 1, 4, 1, 1)
+		switch4_page1 = Gtk.Switch()
+		if(ocrmypdfsettings["clean"] == True):
+			switch4_page1.set_active(True)
+		else:
+			switch4_page1.set_active(False)
+		grid_page1.attach(switch4_page1, 2, 4, 1, 1)
+
+		#Force OCR
+		label5_page1 = Gtk.Label(label="Force OCR")
+		grid_page1.attach(label5_page1, 1, 5, 1, 1)
+		switch5_page1 = Gtk.Switch()
+		if(ocrmypdfsettings["force_ocr"] == True):
+			switch5_page1.set_active(True)
+		else:
+			switch5_page1.set_active(False)
+		grid_page1.attach(switch5_page1, 2, 5, 1, 1)
+
+		#Skip Text
+		label6_page1 = Gtk.Label(label="Skip Text")
+		grid_page1.attach(label6_page1, 1, 6, 1, 1)
+		switch6_page1 = Gtk.Switch()
+		if(ocrmypdfsettings["skip_text"] == True):
+			switch6_page1.set_active(True)
+		else:
+			switch6_page1.set_active(False)
+		grid_page1.attach(switch6_page1, 2, 6, 1, 1)
+
+
+		self.page1.add(grid_page1)
+
+
+		self.notebook.append_page(self.page1, Gtk.Label(label="Options"))#Add and Define Label of Page
+
+		#Page 2 - Languages
+		self.page2 = Gtk.Box()
+		self.page2.set_border_width(10)
+		self.page2.add(Gtk.Label(label="Languages"))
+
+
+
+		self.notebook.append_page(self.page2, Gtk.Label(label="Languages"))#Add and Define Label of Page
+
+
+
+
+		#Build Window
+		#grid = Gtk.Grid()
+		#test_label = Gtk.Label(label="Settings")
+		#grid.attach(test_label, 1, 1, 1, 1)
+		#self.add(grid)
 
 		#Init Logic
 
