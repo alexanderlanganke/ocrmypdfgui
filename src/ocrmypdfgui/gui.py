@@ -409,8 +409,9 @@ class SettingsWindow(Gtk.Window):
 
 		self.main.save_settings()
 
-win = MainWindow()
-win.connect("destroy", Gtk.main_quit)
-win.show_all()
-win.stop_ocr_button.hide()
-Gtk.main()
+def run():
+	win = MainWindow()
+	win.connect("destroy", Gtk.main_quit)
+	win.show_all()
+	win.stop_ocr_button.hide()
+	Gtk.main()
