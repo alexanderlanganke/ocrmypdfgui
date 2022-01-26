@@ -63,7 +63,7 @@ parts:
 
   ocrmypdfgui:
     # See 'snapcraft plugins'
-    after:[desktop-gnome-platform]
+    after: [desktop-gnome-platform]
     plugin: python
     source: .
     stage-packages: [ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
