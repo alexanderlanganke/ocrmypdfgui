@@ -37,6 +37,9 @@ parts:
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
+#    build-environment:
+#      - PATH: /usr/bin:$PATH
+#      - PYTHONPATH: ''
     source: .
 #    stage:
 #      - -usr/lib/*/libpango*
