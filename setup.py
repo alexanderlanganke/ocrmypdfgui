@@ -22,7 +22,7 @@ setuptools.setup(
     ],
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     install_requires=[
         'cffi >= 1.9.1',  # must be a setup and install requirement
         'coloredlogs >= 14.0',  # strictly optional
@@ -36,7 +36,7 @@ setuptools.setup(
         'tqdm >= 4',
         'ocrmypdf >= 12.0.2',
         'pytesseract >= 0.3.8',
-        'PyGObject >= 3.42.0'
+#        'PyGObject'
     ],
     entry_points={'console_scripts': ['ocrmypdfgui = ocrmypdfgui.__main__:main']},
 
