@@ -1,7 +1,7 @@
 name: ocrmypdfgui # you probably want to 'snapcraft register <name>'
 title: ocrmypdfgui
-base: core20 # the base snap is the execution environment for this snap
-version: '0.9.03' # just for humans, typically '1.2+git' or '1.3.2'
+base: core18 # the base snap is the execution environment for this snap
+version: '0.9.04' # just for humans, typically '1.2+git' or '1.3.2'
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
@@ -15,14 +15,13 @@ environment:
     TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
     GS_LIB: $SNAP/usr/share/ghostscript/9.26/Resource/Init
     GS_FONTPATH: $SNAP/usr/share/ghostscript/9.26/Resource/Font
-    #GI_TYPELIB_PATH: $SNAP/usr/lib/x86_64-linux-gnu/girepository-1.0
     LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
-    #PYTHONPATH: $SNAP_DESKTOP_RUNTIME/usr/lib/python3.8/site-packages
+
 apps:
   ocrmypdfgui:
-    command: python3 $SNAP/lib/python3.8/site-packages/ocrmypdfgui/__main__.py
+    command: python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py #python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
     desktop: $SNAPCRAFT_PROJECT_DIR/gui/ocrmypdfgui.desktop
-    extensions: [gnome-3-38]
+    extensions: [gnome-3-34]
 
     plugs:
       - desktop
@@ -37,12 +36,7 @@ parts:
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
-#    build-environment:
-#      - PATH: /usr/bin:$PATH
-#      - PYTHONPATH: ''
     source: .
-#    stage:
-#      - -usr/lib/*/libpango*
     stage-packages: [ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
 
     python-packages:
@@ -57,7 +51,7 @@ parts:
 #      - reportlab
 #      - setuptools
 #      - tqdm
-#
-#    override-build: |
-#      snapcraftctl build
-#      sed -i 's/find_library(libname)/"liblept.so.5"/g' $SNAPCRAFT_PART_INSTALL/lib/python3.8/site-packages/ocrmypdf/leptonica.py
+
+    override-build: |
+      snapcraftctl build
+      sed -i 's/find_library(libname)/"liblept.so.5"/g' $SNAPCRAFT_PART_INSTALL/lib/python3.6/site-packages/ocrmypdf/leptonica.py

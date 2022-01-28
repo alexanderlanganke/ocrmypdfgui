@@ -22,7 +22,7 @@ setuptools.setup(
     ],
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
-    python_requires=">=3.8",
+    python_requires=">=3.6",
     install_requires=[
         'cffi >= 1.9.1',  # must be a setup and install requirement
         'coloredlogs >= 14.0',  # strictly optional
