@@ -147,12 +147,13 @@ class MainWindow(Gtk.Window):
 			with open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) as f:
 
 				self.ocrmypdfsettings = json.load(f)
-
+				f.close()
 			#self.ocrmypdfapioptions_info = self.dict_to_string(self.ocrmypdfsettings)
 			print("Settings Loaded")
 
 		else:
 			print("Settings not found")
+			#Write code to put some default settings into self.ocrmypdfsettings and then maybe run save_settings
 			pass
 
 	def save_settings(self):
@@ -275,6 +276,8 @@ class SettingsWindow(Gtk.Window):
 		self.main = main
 		#Build Window
 		Gtk.Window.__init__(self, title="Settings")
+		self.set_border_width(10)
+		self.set_default_size(900, 550)
 		self.notebook = Gtk.Notebook()
 		self.add(self.notebook)
 		print(self.main.ocrmypdfsettings)
@@ -292,7 +295,7 @@ class SettingsWindow(Gtk.Window):
 			self.switch1_page1.set_active(True)
 		else:
 			self.switch1_page1.set_active(False)
-		self.switch1_page1.connect("notify::active", self.save_state)
+		self.switch1_page1.connect("notify::active", self.save_state, label1_page1)
 		grid_page1.attach(self.switch1_page1, 2, 1, 1, 1)
 
 		#Remove Background
@@ -303,7 +306,7 @@ class SettingsWindow(Gtk.Window):
 			self.switch2_page1.set_active(True)
 		else:
 			self.switch2_page1.set_active(False)
-		self.switch2_page1.connect("notify::active", self.save_state)
+		self.switch2_page1.connect("notify::active", self.save_state, label2_page1)
 		grid_page1.attach(self.switch2_page1, 2, 2, 1, 1)
 
 		#Deskew
@@ -314,7 +317,7 @@ class SettingsWindow(Gtk.Window):
 			self.switch3_page1.set_active(True)
 		else:
 			self.switch3_page1.set_active(False)
-		self.switch3_page1.connect("notify::active", self.save_state)
+		self.switch3_page1.connect("notify::active", self.save_state, label3_page1)
 		grid_page1.attach(self.switch3_page1, 2, 3, 1, 1)
 
 		#Clean
@@ -325,7 +328,7 @@ class SettingsWindow(Gtk.Window):
 			self.switch4_page1.set_active(True)
 		else:
 			self.switch4_page1.set_active(False)
-		self.switch4_page1.connect("notify::active", self.save_state)
+		self.switch4_page1.connect("notify::active", self.save_state, label4_page1)
 		grid_page1.attach(self.switch4_page1, 2, 4, 1, 1)
 
 		#Force OCR
@@ -336,7 +339,7 @@ class SettingsWindow(Gtk.Window):
 			self.switch5_page1.set_active(True)
 		else:
 			self.switch5_page1.set_active(False)
-		self.switch5_page1.connect("notify::active", self.save_state)
+		self.switch5_page1.connect("notify::active", self.save_state, label5_page1)
 		grid_page1.attach(self.switch5_page1, 2, 5, 1, 1)
 
 		#Skip Text
@@ -347,7 +350,7 @@ class SettingsWindow(Gtk.Window):
 			self.switch6_page1.set_active(True)
 		else:
 			self.switch6_page1.set_active(False)
-		self.switch6_page1.connect("notify::active", self.save_state)
+		self.switch6_page1.connect("notify::active", self.save_state, label6_page1)
 		grid_page1.attach(self.switch6_page1, 2, 6, 1, 1)
 
 
@@ -359,52 +362,68 @@ class SettingsWindow(Gtk.Window):
 		#Page 2 - Languages
 		self.page2 = Gtk.Box()
 		self.page2.set_border_width(10)
+		self.scrolledwindow = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+		self.page2.add(self.scrolledwindow)
 		grid_page2 = Gtk.Grid()
 
-		#Button English
-		self.button_eng = Gtk.ToggleButton(label="English")
-		grid_page2.attach(self.button_eng, 1, 1, 1, 1)
-		if("eng" in self.main.ocrmypdfsettings["language"]):
-			self.button_eng.set_active(True)
+		#Write Code to create a dynamic grid which will adapt to the number of installed languages
+		#iterate through all languages and create new row every x items
+		#create a dict to hold buttons with the label representing the language "deu", "eng" etc.
+		#adapt save_state() to read these dynamic buttons into languages[]
+		row = 0
+		column = 0
+		x=0
+		i=0
+		if (len(self.ocrmypdflanguages)<10):
+			x = len(self.ocrmypdflanguages)
 		else:
-			self.button_eng.set_active(False)
-		self.button_eng.connect("notify::active", self.save_state)
+			x = 10
+		while (i < len(self.ocrmypdflanguages)):
+			print("i = " + str(i))
+			while (column < x):
+				if(i==len(self.ocrmypdflanguages)):
+					break
+				else:
+					self.button = Gtk.ToggleButton(label=self.ocrmypdflanguages[i])
+					grid_page2.attach(self.button, column, row, 1, 1)
+					if(self.ocrmypdflanguages[i] in self.main.ocrmypdfsettings["language"]):
+						self.button.set_active(True)
+					else:
+						self.button.set_active(False)
+						self.button.connect("notify::active", self.save_state, self.ocrmypdflanguages[i])
+				column+=1
+				i+=1
+			row+=1
+			column = 0
 
-		#Button German
-		self.button_deu = Gtk.ToggleButton(label="German")
-		grid_page2.attach(self.button_deu, 1, 2, 1, 1)
-		if("deu" in self.main.ocrmypdfsettings["language"]):
-			self.button_deu.set_active(True)
-		else:
-			self.button_deu.set_active(False)
-		self.button_deu.connect("notify::active", self.save_state)
-
-		print(self.ocrmypdflanguages)
-
-
-		self.page2.add(grid_page2)
+		self.scrolledwindow.add(grid_page2)
 		self.notebook.append_page(self.page2, Gtk.Label(label="Languages"))#Add and Define Label of Page
 
 
-	def save_state(self, switch, gparam):
+	def save_state(self, widget, gparam, name):
 		#save state of widgets to settings
+		#run different code depending on what type of widget activates this function
 		print("save state")
 		#Switches
-		self.main.ocrmypdfsettings['rotate_pages'] = self.switch1_page1.get_active()
-		self.main.ocrmypdfsettings['remove_background'] = self.switch2_page1.get_active()
-		self.main.ocrmypdfsettings['deskew'] = self.switch3_page1.get_active()
-		self.main.ocrmypdfsettings['clean'] = self.switch4_page1.get_active()
-		self.main.ocrmypdfsettings['force_ocr'] = self.switch5_page1.get_active()
-		self.main.ocrmypdfsettings['skip_text'] = self.switch6_page1.get_active()
-
+		if(isinstance(widget, Gtk.Switch)):
+			print("GtkSwitch")
+			self.main.ocrmypdfsettings['rotate_pages'] = self.switch1_page1.get_active()
+			self.main.ocrmypdfsettings['remove_background'] = self.switch2_page1.get_active()
+			self.main.ocrmypdfsettings['deskew'] = self.switch3_page1.get_active()
+			self.main.ocrmypdfsettings['clean'] = self.switch4_page1.get_active()
+			self.main.ocrmypdfsettings['force_ocr'] = self.switch5_page1.get_active()
+			self.main.ocrmypdfsettings['skip_text'] = self.switch6_page1.get_active()
 		#languages
-		languages = []
-		if(self.button_eng.get_active()):
-			languages.append("eng")
-		if(self.button_deu.get_active()):
-			languages.append("deu")
-		self.main.ocrmypdfsettings['language'] = languages
-
+		elif(isinstance(widget, Gtk.ToggleButton)):
+			print("ToggleButton")
+			languages = self.main.ocrmypdfsettings['language']
+			if(widget.get_active() == True):
+				languages.append(name)
+			elif(widget.get_active() == False):
+				languages.remove(name)
+			self.main.ocrmypdfsettings['language'] = languages
+		else:
+			print("error")
 		print(self.main.ocrmypdfsettings)
 
 		self.main.save_settings()
