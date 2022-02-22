@@ -117,7 +117,6 @@ class MainWindow(Gtk.Window):
 		ocrmypdf_progressbar_singlefile.set_callback(update_label_singlefile_progress_info, self.singlefile_progress, self.label_currentfile)
 
 	def increment_progress_bar_batch(self, step):
-		print("increment_progress_bar_batch to: " + str(step))
 		self.progressbar.set_fraction(step)
 
 	def about_application(self, button):
@@ -141,31 +140,24 @@ class MainWindow(Gtk.Window):
 		#Open Settings File
 #		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
 		if os.path.isfile(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) == True:
-
 			print("Settings found")
-#			with open(os.path.join(os.path.dirname(__file__), 'settings.ini')) as f:
 			with open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) as f:
 
 				self.ocrmypdfsettings = json.load(f)
 				f.close()
-			#self.ocrmypdfapioptions_info = self.dict_to_string(self.ocrmypdfsettings)
 			print("Settings Loaded")
 
 		else:
 			print("Settings not found")
-			#Write code to put some default settings into self.ocrmypdfsettings and then maybe run save_settings
-			pass
+			self.ocrmypdfsettings = {"use_threads": bool(0), "rotate_pages": bool(0), "remove_background": bool(0), "deskew": bool(0), "clean": bool(0), "clean_final": bool(0), "remove_vectors": bool(0), "threshold": bool(0), "force_ocr": bool(0), "skip_text": bool(0), "redo_ocr": bool(0), "jbig2_lossy": bool(0), "keep_temporary_files": bool(0), "progress_bar": bool(0), "title": "", "author": "", "subject": "", "language": []}
 
 	def save_settings(self):
-		print("savefunction")
-		print(self.ocrmypdfsettings)
 
 		try:
-#			json.dump(settings, open(os.path.join(os.path.dirname(__file__), 'settings.ini'), "w"))
 			Path(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui')).mkdir(parents=True, exist_ok=True)
 			json.dump(self.ocrmypdfsettings, open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini'), "w"))
-
 			print("Saved")
+
 		except:
 			print("Error Saving to file.")
 			#self.on_error_clicked("Error Saving.", "Settings could not be saved to disk.")
@@ -280,7 +272,6 @@ class SettingsWindow(Gtk.Window):
 		self.set_default_size(900, 550)
 		self.notebook = Gtk.Notebook()
 		self.add(self.notebook)
-		print(self.main.ocrmypdfsettings)
 
 		#Page 1 - Options
 		self.page1 = Gtk.Box()
@@ -379,7 +370,6 @@ class SettingsWindow(Gtk.Window):
 		else:
 			x = 10
 		while (i < len(self.ocrmypdflanguages)):
-			print("i = " + str(i))
 			while (column < x):
 				if(i==len(self.ocrmypdflanguages)):
 					break
@@ -388,6 +378,7 @@ class SettingsWindow(Gtk.Window):
 					grid_page2.attach(self.button, column, row, 1, 1)
 					if(self.ocrmypdflanguages[i] in self.main.ocrmypdfsettings["language"]):
 						self.button.set_active(True)
+						self.button.connect("notify::active", self.save_state, self.ocrmypdflanguages[i])
 					else:
 						self.button.set_active(False)
 						self.button.connect("notify::active", self.save_state, self.ocrmypdflanguages[i])
@@ -403,10 +394,8 @@ class SettingsWindow(Gtk.Window):
 	def save_state(self, widget, gparam, name):
 		#save state of widgets to settings
 		#run different code depending on what type of widget activates this function
-		print("save state")
 		#Switches
 		if(isinstance(widget, Gtk.Switch)):
-			print("GtkSwitch")
 			self.main.ocrmypdfsettings['rotate_pages'] = self.switch1_page1.get_active()
 			self.main.ocrmypdfsettings['remove_background'] = self.switch2_page1.get_active()
 			self.main.ocrmypdfsettings['deskew'] = self.switch3_page1.get_active()
@@ -415,7 +404,6 @@ class SettingsWindow(Gtk.Window):
 			self.main.ocrmypdfsettings['skip_text'] = self.switch6_page1.get_active()
 		#languages
 		elif(isinstance(widget, Gtk.ToggleButton)):
-			print("ToggleButton")
 			languages = self.main.ocrmypdfsettings['language']
 			if(widget.get_active() == True):
 				languages.append(name)
@@ -423,8 +411,7 @@ class SettingsWindow(Gtk.Window):
 				languages.remove(name)
 			self.main.ocrmypdfsettings['language'] = languages
 		else:
-			print("error")
-		print(self.main.ocrmypdfsettings)
+			print("Error calling save_state function")
 
 		self.main.save_settings()
 
