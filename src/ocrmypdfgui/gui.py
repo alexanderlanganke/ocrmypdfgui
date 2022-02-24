@@ -122,7 +122,7 @@ class MainWindow(Gtk.Window):
 	def about_application(self, button):
 		#about page
 		dialog = Gtk.AboutDialog()
-		logo = GdkPixbuf.Pixbuf.new_from_file ("../../gui/ocrmypdfgui.png")
+		logo = GdkPixbuf.Pixbuf.new_from_file ("ocrmypdfgui.png")
 		authors = ["Alexander Langanke"]
 		dialog.set_authors(authors)
 		dialog.set_logo(logo)
