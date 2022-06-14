@@ -28,23 +28,23 @@ def ocr_run(file_path, ocrmypdfsettings, print_to_textview):
 		print("Start OCR - " + file_path)
 #		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar"])
 		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
-		GLib.idle_add(print_to_textview, "OCR complete.\n")
+		GLib.idle_add(print_to_textview, "OCR complete\n", "success")
 
 		print("OCR complete.\n")
 		return "OCR complete.\n"
 
 	except ocrmypdf.exceptions.PriorOcrFoundError:
-		GLib.idle_add(print_to_textview, "Prior OCR - Skipping\n")
+		GLib.idle_add(print_to_textview, "Prior OCR - Skipping\n", "skip")
 		print("Prior OCR - Skipping\n")
 		return "Prior OCR - Skipping\n"
 
 	except ocrmypdf.exceptions.EncryptedPdfError:
-		GLib.idle_add(print_to_textview, "PDF File is encrypted. Skipping.\n")
+		GLib.idle_add(print_to_textview, "PDF File is encrypted - Skipping.\n", "error")
 		print("PDF File is encrypted. Skipping.\n")
 		return "PDF File is encrypted. Skipping.\n"
 
 	except ocrmypdf.exceptions.BadArgsError:
-		GLib.idle_add(print_to_textview, "Bad arguments.\n")
+		GLib.idle_add(print_to_textview, "Bad arguments\n", "error")
 		print("Bad arguments.\n")
 
 	except:
@@ -66,7 +66,7 @@ def batch_ocr(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings):
 		if file_ext == '.pdf':
 
 			print("Path:" + dir_path + "\n")
-			GLib.idle_add(print_to_textview, "File: " + dir_path + " - ")
+			GLib.idle_add(print_to_textview, "File: " + dir_path + " - ", "default")
 
 			result = ocr_run(dir_path, ocrmypdfsettings, print_to_textview)
 			GLib.idle_add(progressbar_batch, 1.0) #Sets progressbar_batch to 100%
@@ -90,7 +90,7 @@ def batch_ocr(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings):
 					full_path = dir_name + '/' + filename
 
 					print("Path:" + full_path + "\n")
-					GLib.idle_add(print_to_textview, "File: " + full_path + " - ")
+					GLib.idle_add(print_to_textview, "File: " + full_path + " - ", "default")
 					result = ocr_run(full_path, ocrmypdfsettings, print_to_textview)
 					progress_precision = progress_precision + percent_step #necessary to hit 100 by incrementing
 					print(progress_precision)

@@ -243,9 +243,21 @@ class MainWindow(Gtk.Window):
 		text = '"Click me4" button was clicked'
 		self.print_to_textview(text)
 
-	def print_to_textview(self, text):
+	def print_to_textview(self, text, type):
 		end_iter = self.textbuffer.get_end_iter()
-		self.textbuffer.insert(end_iter, text)
+
+		if (type == "success"):
+			self.textbuffer.insert_markup(end_iter, "<span color='green'>"+text+"</span>", -1)
+		elif (type == "error"):
+			self.textbuffer.insert_markup(end_iter, "<span color='red'>"+text+"</span>", -1)
+		elif (type == "skip"):
+			self.textbuffer.insert_markup(end_iter, "<span color='blue'>"+text+"</span>", -1)
+		elif (type == "default"):
+			self.textbuffer.insert_markup(end_iter, "<span color='black'>"+text+"</span>", -1)
+
+		else:
+			self.textbuffer.insert(end_iter, text)
+
 		end_iter = self.textbuffer.get_end_iter()
 		self.textview.scroll_to_iter(end_iter, 0, 0, 0, 0)
 
