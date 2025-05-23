@@ -19,7 +19,7 @@ environment:
 
 apps:
   ocrmypdfgui:
-    command: bin/snapcraft-preload python3 $SNAP/lib/python3.6/site-packages/ocrmypdfgui/__main__.py
+    command: desktop-launch python3 -m ocrmypdfgui
     desktop: $SNAPCRAFT_PROJECT_DIR/gui/ocrmypdfgui.desktop
     extensions: [gnome-3-34]
 
@@ -33,16 +33,6 @@ apps:
 
 
 parts:
-  snapcraft-preload:
-    source: https://github.com/sergiusens/snapcraft-preload.git
-    plugin: cmake
-    stage-packages:
-      - lib32stdc++6
-    build-packages:
-      - on amd64:
-        - gcc-multilib
-        - g++-multilib
-
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
@@ -50,7 +40,7 @@ parts:
 #    stage:
 #     - -usr/lib/*/libpango*
 #     - -usr/lib/*/libharfbuzz*
-    stage-packages: [ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g]
+    stage-packages: [ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g, libgtk-3-bin]
 
     python-packages:
       - ocrmypdf
@@ -68,18 +58,12 @@ parts:
     override-build: |
       snapcraftctl build
       sed -i 's/find_library(libname)/"liblept.so.5"/g' $SNAPCRAFT_PART_INSTALL/lib/python3.6/site-packages/ocrmypdf/leptonica.py
-
-  cleanup:
-    after:  # Make this part run last; list all your other parts here
-      - ocrmypdfgui
-    plugin: nil
-    build-snaps:  # List all content-snaps and base snaps you're using here
-      - core18
-      - gnome-3-34-1804
-      - gnome-3-34-1804-sdk
-      - gtk-common-themes
     override-prime: |
       set -eux
-      for snap in "core18" "gnome-3-34-1804" "gnome-3-34-1804-sdk" "gtk-common-themes"; do  # List all content-snaps and base snaps you're using here
-          cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
-      done
+      # Install icon to standard Hicolor theme directory
+      mkdir -p $SNAPCRAFT_PRIME/usr/share/icons/hicolor/scalable/apps
+      cp gui/ocrmypdfgui.png $SNAPCRAFT_PRIME/usr/share/icons/hicolor/scalable/apps/ocrmypdfgui.png
+      # Call snapcraftctl prime before running host commands like gtk-update-icon-cache
+      snapcraftctl prime
+      # Update icon cache
+      gtk-update-icon-cache $SNAPCRAFT_PRIME/usr/share/icons/hicolor
