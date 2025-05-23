@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.github.alexanderlanganke.ocrmypdfgui</id>
+  
+  <name>OCRmyPDF GUI</name>
+  <summary>A graphical user interface for OCRmyPDF</summary>
+  
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <developer_name>Alexander Langanke</developer_name>
+  
+  <description>
+    <p>
+      OCRmyPDF GUI provides a user-friendly graphical interface for the powerful OCRmyPDF command-line tool created by James R. Barlow. 
+      This application allows users to easily apply Optical Character Recognition (OCR) to PDF files, making them searchable and accessible.
+    </p>
+    <p>
+      As a hobby project, it aims to simplify the OCR process, especially for users who prefer a visual approach over command-line operations. 
+      It supports batch processing, enabling users to process multiple PDF files at once.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">com.github.alexanderlanganke.ocrmypdfgui.desktop</launchable>
+  
+  <url type="homepage">https://github.com/alexanderlanganke/ocrmypdfgui</url>
+  <url type="bugtracker">https://github.com/alexanderlanganke/ocrmypdfgui/issues</url>
+  <url type="donation">https://ko-fi.com/alexlanganke</url> <!-- Assuming this is the correct or a plausible donation URL -->
+
+  <icon type="stock">com.github.alexanderlanganke.ocrmypdfgui</icon> <!-- This will look for an icon named com.github.alexanderlanganke.ocrmypdfgui.png in standard icon theme paths -->
+
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-info">mild</content_attribute>
+    <content_attribute id="violence-cartoon">none</content_attribute>
+    <content_attribute id="violence-fantasy">none</content_attribute>
+    <content_attribute id="violence-realistic">none</content_attribute>
+    <content_attribute id="violence-bloodshed">none</content_attribute>
+    <content_attribute id="violence-sexual">none</content_attribute>
+    <content_attribute id="drugs-alcohol">none</content_attribute>
+    <content_attribute id="drugs-narcotics">none</content_attribute>
+    <content_attribute id="drugs-tobacco">none</content_attribute>
+    <content_attribute id="sex-nudity">none</content_attribute>
+    <content_attribute id="sex-themes">none</content_attribute>
+    <content_attribute id="language-profanity">none</content_attribute>
+    <content_attribute id="language-humor">none</content_attribute>
+    <content_attribute id="language-discrimination">none</content_attribute>
+    <content_attribute id="gambling-simulated">none</content_attribute>
+    <content_attribute id="gambling-real">none</content_attribute>
+  </content_rating>
+
+  <releases>
+    <release version="0.9.15" date="2024-07-21"> <!-- Placeholder date, actual release date should be used -->
+      <description>
+        <p>Initial release for Flathub. Based on version 0.9.15 of the application.</p>
+      </description>
+    </release>
+  </releases>
+
+  <screenshots>
+    <!-- Flathub requires screenshots. Add them here once available. -->
+    <!-- 
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/alexanderlanganke/ocrmypdfgui/main/screenshots/main_window.png</image>
+      <caption>Main application window showing PDF selection and options.</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/alexanderlanganke/ocrmypdfgui/main/screenshots/processing_dialog.png</image>
+      <caption>Processing dialog showing OCR progress.</caption>
+    </screenshot>
+    -->
+  </screenshots>
+
+  <provides>
+    <binary>ocrmypdfgui</binary>
+  </provides>
+
+  <!-- It's good practice to also include translations if available, using <translation type="gettext">ocrmypdfgui</translation> -->
+  <!-- And ODRS update information if applicable: <update_contact>alexander.langanke@example.com</update_contact> -->
+
+</component>
