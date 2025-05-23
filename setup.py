@@ -24,6 +24,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     python_requires=">=3.6",
     install_requires=[
+        'appdirs >= 1.4.4',
         'cffi >= 1.9.1',  # must be a setup and install requirement
         'coloredlogs >= 14.0',  # strictly optional
         'img2pdf >= 0.3.0, < 0.5',  # pure Python, so track HEAD closely

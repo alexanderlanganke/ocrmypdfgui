@@ -87,7 +87,7 @@ def batch_ocr(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings):
 			for filename in file_list:
 				file_ext = os.path.splitext(filename)[1]
 				if file_ext == '.pdf':
-					full_path = dir_name + '/' + filename
+					full_path = os.path.join(dir_name, filename)
 
 					print("Path:" + full_path + "\n")
 					GLib.idle_add(print_to_textview, "File: " + full_path + " - ", "default")

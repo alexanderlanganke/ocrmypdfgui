@@ -13,6 +13,7 @@ import sys
 import string
 from pathlib import Path
 import gi
+import appdirs
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gio, GLib, GdkPixbuf
@@ -139,9 +140,10 @@ class MainWindow(Gtk.Window):
 	def load_settings(self):
 		#Open Settings File
 #		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
-		if os.path.isfile(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) == True:
+		settings_file_path = os.path.join(appdirs.user_config_dir("ocrmypdfgui", appauthor=False), "settings.ini")
+		if os.path.isfile(settings_file_path) == True:
 			print("Settings found")
-			with open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) as f:
+			with open(settings_file_path) as f:
 
 				self.ocrmypdfsettings = json.load(f)
 				f.close()
@@ -154,8 +156,9 @@ class MainWindow(Gtk.Window):
 	def save_settings(self):
 
 		try:
-			Path(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui')).mkdir(parents=True, exist_ok=True)
-			json.dump(self.ocrmypdfsettings, open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini'), "w"))
+			settings_dir = Path(appdirs.user_config_dir("ocrmypdfgui", appauthor=False))
+			settings_dir.mkdir(parents=True, exist_ok=True)
+			json.dump(self.ocrmypdfsettings, open(os.path.join(settings_dir, "settings.ini"), "w"))
 			print("Saved")
 
 		except:
@@ -428,6 +431,25 @@ class SettingsWindow(Gtk.Window):
 		self.main.save_settings()
 
 def run():
+	# --- Placeholder for Environment Setup ---
+	if sys.platform == "win32":
+		# These paths are placeholders and will need to be determined during packaging.
+		# They should point to the locations of bundled Tesseract and Ghostscript binaries.
+		# For local development, these would be the manual installation paths.
+		app_root_dir = "" # Placeholder: Determine application root (e.g., os.path.dirname(os.path.abspath(sys.executable)) or similar)
+		bundled_bin_dir = os.path.join(app_root_dir, "bundled_tools", "bin") # Example structure
+		bundled_tessdata_dir = os.path.join(app_root_dir, "bundled_tools", "tessdata") # Example structure
+
+		if bundled_bin_dir and os.path.isdir(bundled_bin_dir): # Check if placeholder is filled and valid
+			os.environ["PATH"] = bundled_bin_dir + os.pathsep + os.environ.get("PATH", "")
+		else:
+			print("WARNING: bundled_bin_dir is not set or invalid. Tesseract/Ghostscript might not be found.")
+
+		if bundled_tessdata_dir and os.path.isdir(bundled_tessdata_dir): # Check if placeholder is filled and valid
+			os.environ["TESSDATA_PREFIX"] = bundled_tessdata_dir
+		else:
+			print("WARNING: bundled_tessdata_dir is not set or invalid. Tesseract language data might not be found.")
+	# --- End Placeholder ---
 	win = MainWindow()
 	win.connect("destroy", Gtk.main_quit)
 	win.show_all()
