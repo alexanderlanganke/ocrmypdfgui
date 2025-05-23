@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import threading
+stop_event = threading.Event()
 import ocrmypdf
 import os
 import sys
@@ -15,8 +16,9 @@ from PIL import Image
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
 
-def start_job(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings):
-	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings), daemon=True)
+def start_job(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings, job_done_callback):
+	stop_event.clear()
+	t = threading.Thread(target=batch_ocr, args=(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings, job_done_callback), daemon=True)
 	t.start()
 	return t
 
@@ -55,51 +57,76 @@ def ocr_run(file_path, ocrmypdfsettings, print_to_textview):
 		print(e)
 		return "Error.\n"
 
-def batch_ocr(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings):
+def batch_ocr(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings, job_done_callback):
 	# walks through given path and uses OCR Function on every pdf in path
-	GLib.idle_add(progressbar_batch, 0.0) #resets progressbar_batch
-	progress_precision = 0.0
-	percent_step = 0.0
-	if(os.path.isfile(dir_path)==True):
-		#Run OCR on single file
-		file_ext = os.path.splitext(dir_path)[1]
-		if file_ext == '.pdf':
+	try:
+		GLib.idle_add(progressbar_batch, 0.0) #resets progressbar_batch
+		progress_precision = 0.0
+		percent_step = 0.0
+		if(os.path.isfile(dir_path)==True):
+			#Run OCR on single file
+			if stop_event.is_set():
+				print("OCR job cancelled.")
+				GLib.idle_add(print_to_textview, "OCR job cancelled.\n", "error")
+				return
 
-			print("Path:" + dir_path + "\n")
-			GLib.idle_add(print_to_textview, "File: " + dir_path + " - ", "default")
+			file_ext = os.path.splitext(dir_path)[1]
+			if file_ext == '.pdf':
 
-			result = ocr_run(dir_path, ocrmypdfsettings, print_to_textview)
-			GLib.idle_add(progressbar_batch, 1.0) #Sets progressbar_batch to 100%
-	elif(os.path.isdir(dir_path)==True):
-		number_of_files = 0
-		for dir_name, subdirs, file_list in os.walk(dir_path):
-			for filename in file_list:
-				file_ext = os.path.splitext(filename)[1]
-				if file_ext == '.pdf':
-					number_of_files=number_of_files+1
+				print("Path:" + dir_path + "\n")
+				GLib.idle_add(print_to_textview, "File: " + dir_path + " - ", "default")
 
-			if number_of_files >0:
-				percent_step = 1/number_of_files	#1 = 100%
-				print("percent_step: " + str(percent_step) + " - " + "number_of_files: " + str(number_of_files))
-		for dir_name, subdirs, file_list in os.walk(dir_path):
-			print(file_list)
+				result = ocr_run(dir_path, ocrmypdfsettings, print_to_textview)
+				# GLib.idle_add(progressbar_batch, 1.0) #Sets progressbar_batch to 100% - Handled by plugin now
+		elif(os.path.isdir(dir_path)==True):
+			number_of_files = 0
+			for dir_name, subdirs, file_list in os.walk(dir_path):
+				if stop_event.is_set():
+					print("OCR job cancelled.")
+					GLib.idle_add(print_to_textview, "OCR job cancelled.\n", "error")
+					break 
+				for filename in file_list:
+					if stop_event.is_set():
+						print("OCR job cancelled.")
+						GLib.idle_add(print_to_textview, "OCR job cancelled.\n", "error")
+						break
+					file_ext = os.path.splitext(filename)[1]
+					if file_ext == '.pdf':
+						number_of_files=number_of_files+1
 
-			for filename in file_list:
-				file_ext = os.path.splitext(filename)[1]
-				if file_ext == '.pdf':
-					full_path = dir_name + '/' + filename
+				if number_of_files >0:
+					percent_step = 1/number_of_files	#1 = 100%
+					print("percent_step: " + str(percent_step) + " - " + "number_of_files: " + str(number_of_files))
+			for dir_name, subdirs, file_list in os.walk(dir_path):
+				if stop_event.is_set():
+					print("OCR job cancelled.")
+					GLib.idle_add(print_to_textview, "OCR job cancelled.\n", "error")
+					break
+				print(file_list)
 
-					print("Path:" + full_path + "\n")
-					GLib.idle_add(print_to_textview, "File: " + full_path + " - ", "default")
-					result = ocr_run(full_path, ocrmypdfsettings, print_to_textview)
-					progress_precision = progress_precision + percent_step #necessary to hit 100 by incrementing
-					print(progress_precision)
-					GLib.idle_add(progressbar_batch, progress_precision) #sets progressbar_batch to current progress
+				for filename in file_list:
+					if stop_event.is_set():
+						print("OCR job cancelled.")
+						GLib.idle_add(print_to_textview, "OCR job cancelled.\n", "error")
+						break
+					file_ext = os.path.splitext(filename)[1]
+					if file_ext == '.pdf':
+						full_path = dir_name + '/' + filename
+
+						print("Path:" + full_path + "\n")
+						GLib.idle_add(print_to_textview, "File: " + full_path + " - ", "default")
+						result = ocr_run(full_path, ocrmypdfsettings, print_to_textview)
+						progress_precision = progress_precision + percent_step #necessary to hit 100 by incrementing
+						print(progress_precision)
+						GLib.idle_add(progressbar_batch, progress_precision) #sets progressbar_batch to current progress
 
 
 
-	else:
-		print("Error")
+		else:
+			print("Error")
+	finally:
+		GLib.idle_add(print_to_textview, "OCR process ended.\n", "default")
+		GLib.idle_add(job_done_callback)
 
 
 def get_api_options():

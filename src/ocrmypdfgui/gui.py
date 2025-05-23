@@ -3,7 +3,7 @@
 #from ocr import get_api_options
 #from ocr import start_job
 #from plugin_progressbar import ocrmypdf_progressbar_singlefile
-from ocrmypdfgui.ocr import start_job
+from ocrmypdfgui.ocr import start_job, stop_event
 from ocrmypdfgui.ocr import get_api_options
 from ocrmypdfgui.plugin_progressbar import ocrmypdf_progressbar_singlefile
 from pytesseract import get_languages
@@ -106,18 +106,28 @@ class MainWindow(Gtk.Window):
 	#Init Logic
 		self.ocr = None
 		self.dir_path = ""
-		self.singlefile_progress = 0
+		# self.singlefile_progress = 0 # Removed
 		self.ocrmypdfsettings = {}
 		self.load_settings()
+		self.start_ocr_button.set_sensitive(True)
+		self.stop_ocr_button.set_sensitive(False)
 
+		ocrmypdf_progressbar_singlefile.set_callback(self.update_single_file_progress_display)
 
-		def update_label_singlefile_progress_info(self, args, singlefile_progress, singlefile_progress_info):
-			singlefile_progress_info.set_text(str(args['desc']))
-
-		ocrmypdf_progressbar_singlefile.set_callback(update_label_singlefile_progress_info, self.singlefile_progress, self.label_currentfile)
+	def update_single_file_progress_display(self, description, progress_fraction):
+		if description: # Description might be None initially from plugin
+			self.label_currentfile.set_text(str(description))
+		self.progressbar.set_fraction(float(progress_fraction))
 
 	def increment_progress_bar_batch(self, step):
+		# This progressbar is for the overall batch progress,
+		# not for the single file progress which is now handled by update_single_file_progress_display
 		self.progressbar.set_fraction(step)
+
+
+	def ocr_job_finished_or_stopped(self):
+		self.start_ocr_button.set_sensitive(True)
+		self.stop_ocr_button.set_sensitive(False)
 
 	def about_application(self, button):
 		#about page
@@ -152,16 +162,28 @@ class MainWindow(Gtk.Window):
 			self.ocrmypdfsettings = {"use_threads": bool(0), "rotate_pages": bool(0), "remove_background": bool(0), "deskew": bool(0), "clean": bool(0), "clean_final": bool(0), "remove_vectors": bool(0), "threshold": bool(0), "force_ocr": bool(0), "skip_text": bool(0), "redo_ocr": bool(0), "jbig2_lossy": bool(0), "keep_temporary_files": bool(0), "progress_bar": bool(0), "title": "", "author": "", "subject": "", "language": []}
 
 	def save_settings(self):
-
+		settings_dir = os.path.join(os.path.expanduser('~'), '.ocrmypdfgui')
+		settings_path = os.path.join(settings_dir, 'settings.ini')
 		try:
-			Path(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui')).mkdir(parents=True, exist_ok=True)
-			json.dump(self.ocrmypdfsettings, open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini'), "w"))
-			print("Saved")
+			Path(settings_dir).mkdir(parents=True, exist_ok=True)
+			with open(settings_path, "w") as f:
+				json.dump(self.ocrmypdfsettings, f, indent=4) # Added indent for readability
+			print("Saved settings to:", settings_path)
+			# self.load_settings() # Removed as per instruction - self.ocrmypdfsettings is already up-to-date.
 
-		except:
-			print("Error Saving to file.")
-			#self.on_error_clicked("Error Saving.", "Settings could not be saved to disk.")
-		self.load_settings()
+		except (IOError, OSError) as e:
+			print(f"Error Saving to file: {e}") 
+			self.on_error_clicked("Error Saving Settings",
+								  f"Could not save settings to disk. Please check permissions or disk space.\nDetails: {e}")
+		except json.JSONDecodeError as e: # Though dump is less likely to cause this than load
+			print(f"Error encoding settings to JSON: {e}")
+			self.on_error_clicked("Error Saving Settings",
+								  f"Could not encode settings data.\nDetails: {e}")
+		except Exception as e: 
+			print(f"An unexpected error occurred while saving settings: {e}")
+			self.on_error_clicked("Error Saving Settings",
+								  f"An unexpected error occurred.\nDetails: {e}")
+		# self.load_settings() # Removed from here, was unconditional previously
 
 	def on_error_clicked(self, message, secondary_text):
 		print("error")
@@ -228,15 +250,16 @@ class MainWindow(Gtk.Window):
 
 	def on_click_startocr(self, button):
 		#What to do on click
-		#self.start_ocr_button.hide()
-		#self.stop_ocr_button.show()
-		self.ocr = start_job(self.dir_path, self.increment_progress_bar_batch, self.print_to_textview, self.ocrmypdfsettings)
+		self.start_ocr_button.set_sensitive(False)
+		self.stop_ocr_button.set_sensitive(True)
+		self.ocr = start_job(self.dir_path, self.increment_progress_bar_batch, self.print_to_textview, self.ocrmypdfsettings, self.ocr_job_finished_or_stopped)
 
 	def on_click_stopocr(self, button):
 		print("stop ocr")
-		#self.start_ocr_button.show()
-		#self.stop_ocr_button.hide()
-		#self.ocr.join()
+		stop_event.set()
+		self.start_ocr_button.set_sensitive(True)
+		self.stop_ocr_button.set_sensitive(False)
+		#self.ocr.join() # Do not join, it blocks the GUI
 
 	def on_click_menu(self, button):
 		#What to do on click
@@ -431,5 +454,5 @@ def run():
 	win = MainWindow()
 	win.connect("destroy", Gtk.main_quit)
 	win.show_all()
-	win.stop_ocr_button.hide()
+	# win.stop_ocr_button.hide() # Handled by set_sensitive in __init__
 	Gtk.main()
