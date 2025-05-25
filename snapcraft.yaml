@@ -1,27 +1,26 @@
 name: ocrmypdfgui # you probably want to 'snapcraft register <name>'
 title: ocrmypdfgui
-base: core18 # the base snap is the execution environment for this snap
-version: '0.9.07' # just for humans, typically '1.2+git' or '1.3.2'
+base: core20 # the base snap is the execution environment for this snap
+version: '0.9.08' # just for humans, typically '1.2+git' or '1.3.2'
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
 icon: gui/ocrmypdfgui.png
-grade: devel # must be 'stable' to release into candidate/stable channels
+grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 #
 architectures: [amd64]
 
 environment:
     TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
-    GS_LIB: $SNAP/usr/share/ghostscript/9.26/Resource/Init
-    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.26/Resource/Font
+    GS_LIB: $SNAP/usr/share/ghostscript/9.50/Resource/Init
+    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.50/Resource/Font
     LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
 
 apps:
   ocrmypdfgui:
-    command: desktop-launch python3 -m ocrmypdfgui
     desktop: $SNAPCRAFT_PROJECT_DIR/gui/ocrmypdfgui.desktop
-    extensions: [gnome-3-34]
+    extensions: [gnome-3-38]
 
     plugs:
       - desktop
@@ -36,34 +35,24 @@ parts:
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
-    source: .
-#    stage:
-#     - -usr/lib/*/libpango*
-#     - -usr/lib/*/libharfbuzz*
-    stage-packages: [ghostscript, icc-profiles-free, liblept5, libxml2, pngquant, tesseract-ocr-all, unpaper, qpdf, zlib1g, libgtk-3-bin]
+    source: 
 
     python-packages:
-      - ocrmypdf
-#      - cffi  # must be a setup and install requirement
-#      - coloredlogs # strictly optional
-#      - img2pdf  # pure Python, so track HEAD closely
-#      - pdfminer.six
-#      - pikepdf
-#      - Pillow
-#      - pluggy
-#      - reportlab
-#      - setuptools
-#      - tqdm
+      - cffi  # must be a setup and install requirement
+      - pdfminer.six
+      - pikepdf
+      - Pillow
+      - pluggy
+      - reportlab
+      - setuptools
+      - tqdm
+      - pipe
 
     override-build: |
+      ln -sf ../usr/lib/libsnapcraft-preload.so $SNAPCRAFT_PART_INSTALL/lib/libsnapcraft-preload.so
+      rm -rf $SNAPCRAFT_PART_INSTALL/usr/lib/python3.9/distutils
+      cp -r /usr/lib/python3.9/distutils $SNAPCRAFT_PART_INSTALL/usr/lib/python3.9/distutils
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/include/
+      cp -r /usr/include/python3.9 $SNAPCRAFT_PART_INSTALL/usr/include/python3.9
       snapcraftctl build
-      sed -i 's/find_library(libname)/"liblept.so.5"/g' $SNAPCRAFT_PART_INSTALL/lib/python3.6/site-packages/ocrmypdf/leptonica.py
-    override-prime: |
-      set -eux
-      # Install icon to standard Hicolor theme directory
-      mkdir -p $SNAPCRAFT_PRIME/usr/share/icons/hicolor/scalable/apps
-      cp gui/ocrmypdfgui.png $SNAPCRAFT_PRIME/usr/share/icons/hicolor/scalable/apps/ocrmypdfgui.png
-      # Call snapcraftctl prime before running host commands like gtk-update-icon-cache
-      snapcraftctl prime
-      # Update icon cache
-      gtk-update-icon-cache $SNAPCRAFT_PRIME/usr/share/icons/hicolor
+
