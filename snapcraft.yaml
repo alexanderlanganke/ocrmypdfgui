@@ -1,7 +1,7 @@
 name: ocrmypdfgui
 title: ocrmypdfgui
 base: core20
-version: '0.9.2' # Matched with setup.py
+version: '0.9.15' # Matched with setup.py
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
@@ -20,8 +20,8 @@ environment:
 apps:
   ocrmypdfgui:
     command: python3 -m ocrmypdfgui
-    desktop: gui/ocrmypdfgui.desktop # Adjusted to be relative to snap root
-    extensions: [gnome-3-38]
+    desktop: gui/ocrmypdfgui.desktop
+    extensions: [gnome-3-38] # This provides PyGObject and other GTK dependencies
     plugs:
       - desktop
       - desktop-legacy
@@ -34,7 +34,7 @@ parts:
   ocrmypdfgui:
     plugin: python
     source: .
-    build-packages: # Added to ensure pip/setuptools are available for venv creation
+    build-packages:
       - python3-setuptools
       - python3-pip
       - python3-wheel
@@ -47,13 +47,13 @@ parts:
       - pikepdf
       - Pillow
       - pluggy
-      - PyGObject
+      # PyGObject is removed from here - it will be provided by the gnome-3-38 extension
       - pytesseract
       - rarfile
       - reportlab
-      - setuptools # Ensure setuptools is in the venv
+      - setuptools
       - tqdm
-      - wheel      # Ensure wheel is in the venv
+      - wheel
     stage-packages:
       - ghostscript
       - tesseract-ocr-eng # For English. Use tesseract-ocr-all for all languages (larger snap)
