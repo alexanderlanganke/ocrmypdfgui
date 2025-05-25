@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-#from ocr import get_api_options
-#from ocr import start_job
-#from plugin_progressbar import ocrmypdf_progressbar_singlefile
 from ocrmypdfgui.ocr import start_job, stop_event
 from ocrmypdfgui.ocr import get_api_options
 from ocrmypdfgui.plugin_progressbar import ocrmypdf_progressbar_singlefile
@@ -106,7 +103,6 @@ class MainWindow(Gtk.Window):
 	#Init Logic
 		self.ocr = None
 		self.dir_path = ""
-		# self.singlefile_progress = 0 # Removed
 		self.ocrmypdfsettings = {}
 		self.load_settings()
 		self.start_ocr_button.set_sensitive(True)
@@ -132,13 +128,29 @@ class MainWindow(Gtk.Window):
 	def about_application(self, button):
 		#about page
 		dialog = Gtk.AboutDialog()
-		logo = GdkPixbuf.Pixbuf.new_from_file ("../../gui/ocrmypdfgui.png")
 		authors = ["Alexander Langanke"]
 		dialog.set_authors(authors)
-		dialog.set_logo(logo)
 		dialog.set_program_name("OCRmyPDFGui")
 		dialog.set_website("https://github.com/alexanderlanganke/ocrmypdfgui")
 		dialog.set_comments("I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not 'official'. Feel free to use it if you like.")
+
+		snap_dir = os.getenv("SNAP")
+		if snap_dir:
+			icon_path = os.path.join(snap_dir, "gui/ocrmypdfgui.png")
+		else:
+			# Fallback for running outside snap (e.g., development)
+			# Assumes the script is in src/ocrmypdfgui, so gui/ is ../../gui/
+			icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "gui", "ocrmypdfgui.png")
+
+		if os.path.exists(icon_path):
+			try:
+				logo = GdkPixbuf.Pixbuf.new_from_file(icon_path)
+				dialog.set_logo(logo)
+			except GLib.Error as e: # More specific exception for GdkPixbuf loading errors
+				print(f"Warning: Could not load icon at {icon_path}: {e}")
+		else:
+			print(f"Warning: Icon not found at {icon_path}")
+		
 		response = dialog.run()
 
 	def settings(self, button):
@@ -147,53 +159,35 @@ class MainWindow(Gtk.Window):
 		settings_window.show_all()
 
 	def load_settings(self):
-		#Open Settings File
-#		if os.path.isfile(os.path.join(os.path.dirname(__file__), 'settings.ini')) == True:
-		if os.path.isfile(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) == True:
+		default_settings = {
+			"use_threads": False, "rotate_pages": False, "remove_background": False,
+			"deskew": False, "clean": False, "clean_final": False,
+			"remove_vectors": False, "threshold": False, "force_ocr": False,
+			"skip_text": False, "redo_ocr": False, "jbig2_lossy": False,
+			"keep_temporary_files": False, "progress_bar": False,
+			"title": "", "author": "", "subject": "", "language": [],
+			"output_mode": "pdf", "new_archive_on_sidecar": True
+		}
+		settings_file_path = os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')
+
+		if os.path.exists(settings_file_path):
 			print("Settings found")
-			with open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) as f:
-
-				self.ocrmypdfsettings = json.load(f)
-				f.close()
-			print("Settings Loaded")
-
+			try:
+				with open(settings_file_path, 'r') as f:
+					loaded_settings = json.load(f)
+				print("Settings Loaded")
+				# Merge loaded settings with defaults. Loaded settings take precedence.
+				self.ocrmypdfsettings = {**default_settings, **loaded_settings}
+			except (json.JSONDecodeError, IOError, OSError) as e:
+				print(f"Error loading settings file: {e}. Using default settings.")
+				self.ocrmypdfsettings = default_settings
 		else:
 			print("Settings not found")
-			# Define all default settings, including new ones
-			default_settings = {
-				"use_threads": bool(0), "rotate_pages": bool(0), "remove_background": bool(0),
-				"deskew": bool(0), "clean": bool(0), "clean_final": bool(0),
-				"remove_vectors": bool(0), "threshold": bool(0), "force_ocr": bool(0),
-				"skip_text": bool(0), "redo_ocr": bool(0), "jbig2_lossy": bool(0),
-				"keep_temporary_files": bool(0), "progress_bar": bool(0),
-				"title": "", "author": "", "subject": "", "language": [],
-				"output_mode": "pdf",  # Default for new setting
-				"new_archive_on_sidecar": True  # Default for new setting
-			}
 			self.ocrmypdfsettings = default_settings
-		else: # Settings file exists, load it and merge with defaults for missing keys
-			print("Settings found")
-			with open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) as f:
-				loaded_settings = json.load(f)
-				f.close()
-			print("Settings Loaded")
 
-			# Define all default settings to ensure new keys are added if missing
-			default_settings = {
-				"use_threads": bool(0), "rotate_pages": bool(0), "remove_background": bool(0),
-				"deskew": bool(0), "clean": bool(0), "clean_final": bool(0),
-				"remove_vectors": bool(0), "threshold": bool(0), "force_ocr": bool(0),
-				"skip_text": bool(0), "redo_ocr": bool(0), "jbig2_lossy": bool(0),
-				"keep_temporary_files": bool(0), "progress_bar": bool(0),
-				"title": "", "author": "", "subject": "", "language": [],
-				"output_mode": "pdf",
-				"new_archive_on_sidecar": True
-			}
-			self.ocrmypdfsettings = {**default_settings, **loaded_settings}
-			# Ensure 'language' is always a list, even if settings.ini had null or other type
-			if not isinstance(self.ocrmypdfsettings.get("language"), list):
-				self.ocrmypdfsettings["language"] = []
-
+		# Ensure 'language' is always a list
+		if not isinstance(self.ocrmypdfsettings.get("language"), list):
+			self.ocrmypdfsettings["language"] = []
 
 	def save_settings(self):
 		settings_dir = os.path.join(os.path.expanduser('~'), '.ocrmypdfgui')
@@ -558,5 +552,4 @@ def run():
 	win = MainWindow()
 	win.connect("destroy", Gtk.main_quit)
 	win.show_all()
-	# win.stop_ocr_button.hide() # Handled by set_sensitive in __init__
 	Gtk.main()

@@ -1,7 +1,7 @@
 name: ocrmypdfgui # you probably want to 'snapcraft register <name>'
 title: ocrmypdfgui
 base: core20 # the base snap is the execution environment for this snap
-version: '0.9.08' # just for humans, typically '1.2+git' or '1.3.2'
+version: '0.9.15' # just for humans, typically '1.2+git' or '1.3.2'
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
@@ -36,24 +36,29 @@ parts:
   ocrmypdfgui:
     # See 'snapcraft plugins'
     plugin: python
-    source: 
+    source: .
 
     python-packages:
-      - cffi  # must be a setup and install requirement
-      - pdfminer.six
-      - pikepdf
-      - Pillow
-      - pluggy
-      - reportlab
+      - cffi # >= 1.9.1
+      - coloredlogs # >= 14.0
+      - img2pdf # >= 0.3.0, < 0.5
+      - ocrmypdf # >= 12.0.2
+      - pdfminer.six # >= 20191110, != 20200720, <= 20201018
+      - pikepdf # >= 2.10.0
+      - Pillow # >= 8.1.2
+      - pluggy # >= 0.13.0, < 1.0
+      - PyGObject
+      - pytesseract # >= 0.3.8
+      - rarfile # >= 3.0
+      - reportlab # >= 3.5.66
       - setuptools
-      - tqdm
-      - pipe
+      - tqdm # >= 4
+
+    stage-packages:
+      - ghostscript
+      - tesseract-ocr-eng
 
     override-build: |
       ln -sf ../usr/lib/libsnapcraft-preload.so $SNAPCRAFT_PART_INSTALL/lib/libsnapcraft-preload.so
-      rm -rf $SNAPCRAFT_PART_INSTALL/usr/lib/python3.9/distutils
-      cp -r /usr/lib/python3.9/distutils $SNAPCRAFT_PART_INSTALL/usr/lib/python3.9/distutils
-      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/include/
-      cp -r /usr/include/python3.9 $SNAPCRAFT_PART_INSTALL/usr/include/python3.9
       snapcraftctl build
 
