@@ -36,8 +36,8 @@ class MainWindow(Gtk.Window):
 
 	#Add Select File Button
 		#button = Gtk.Button.new_from_icon_name("pan-end-symbolic", Gtk.IconSize.MENU)
-		button = Gtk.Button.new_with_label("Select PDF")
-		button.connect("clicked", self.on_click_selectpdf)
+		button = Gtk.Button.new_with_label("Select File")
+		button.connect("clicked", self.on_click_select_file)
 		box.add(button)
 
 	#Add Select Folder Button
@@ -159,7 +159,41 @@ class MainWindow(Gtk.Window):
 
 		else:
 			print("Settings not found")
-			self.ocrmypdfsettings = {"use_threads": bool(0), "rotate_pages": bool(0), "remove_background": bool(0), "deskew": bool(0), "clean": bool(0), "clean_final": bool(0), "remove_vectors": bool(0), "threshold": bool(0), "force_ocr": bool(0), "skip_text": bool(0), "redo_ocr": bool(0), "jbig2_lossy": bool(0), "keep_temporary_files": bool(0), "progress_bar": bool(0), "title": "", "author": "", "subject": "", "language": []}
+			# Define all default settings, including new ones
+			default_settings = {
+				"use_threads": bool(0), "rotate_pages": bool(0), "remove_background": bool(0),
+				"deskew": bool(0), "clean": bool(0), "clean_final": bool(0),
+				"remove_vectors": bool(0), "threshold": bool(0), "force_ocr": bool(0),
+				"skip_text": bool(0), "redo_ocr": bool(0), "jbig2_lossy": bool(0),
+				"keep_temporary_files": bool(0), "progress_bar": bool(0),
+				"title": "", "author": "", "subject": "", "language": [],
+				"output_mode": "pdf",  # Default for new setting
+				"new_archive_on_sidecar": True  # Default for new setting
+			}
+			self.ocrmypdfsettings = default_settings
+		else: # Settings file exists, load it and merge with defaults for missing keys
+			print("Settings found")
+			with open(os.path.join(os.path.expanduser('~'), '.ocrmypdfgui', 'settings.ini')) as f:
+				loaded_settings = json.load(f)
+				f.close()
+			print("Settings Loaded")
+
+			# Define all default settings to ensure new keys are added if missing
+			default_settings = {
+				"use_threads": bool(0), "rotate_pages": bool(0), "remove_background": bool(0),
+				"deskew": bool(0), "clean": bool(0), "clean_final": bool(0),
+				"remove_vectors": bool(0), "threshold": bool(0), "force_ocr": bool(0),
+				"skip_text": bool(0), "redo_ocr": bool(0), "jbig2_lossy": bool(0),
+				"keep_temporary_files": bool(0), "progress_bar": bool(0),
+				"title": "", "author": "", "subject": "", "language": [],
+				"output_mode": "pdf",
+				"new_archive_on_sidecar": True
+			}
+			self.ocrmypdfsettings = {**default_settings, **loaded_settings}
+			# Ensure 'language' is always a list, even if settings.ini had null or other type
+			if not isinstance(self.ocrmypdfsettings.get("language"), list):
+				self.ocrmypdfsettings["language"] = []
+
 
 	def save_settings(self):
 		settings_dir = os.path.join(os.path.expanduser('~'), '.ocrmypdfgui')
@@ -202,7 +236,7 @@ class MainWindow(Gtk.Window):
 
 		dialog.destroy()
 
-	def on_click_selectpdf(self, button):
+	def on_click_select_file(self, button):
 		#What to do on click
 		dialog = Gtk.FileChooserDialog(
 			title="Please choose a file", parent=self, action=Gtk.FileChooserAction.OPEN
@@ -213,10 +247,26 @@ class MainWindow(Gtk.Window):
 			Gtk.STOCK_OPEN,
 			Gtk.ResponseType.OK,
 		)
+
+		filter_all_supported = Gtk.FileFilter()
+		filter_all_supported.set_name("All supported files")
+		filter_all_supported.add_mime_type("application/pdf")
+		filter_all_supported.add_pattern("*.pdf")
+		filter_all_supported.add_pattern("*.cbz")
+		filter_all_supported.add_pattern("*.cbr")
+		dialog.add_filter(filter_all_supported)
+
 		filter_pdf = Gtk.FileFilter()
 		filter_pdf.set_name("PDF files")
 		filter_pdf.add_mime_type("application/pdf")
+		filter_pdf.add_pattern("*.pdf")
 		dialog.add_filter(filter_pdf)
+
+		filter_comic = Gtk.FileFilter()
+		filter_comic.set_name("Comic Book Archive files")
+		filter_comic.add_pattern("*.cbz")
+		filter_comic.add_pattern("*.cbr")
+		dialog.add_filter(filter_comic)
 
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
@@ -379,6 +429,42 @@ class SettingsWindow(Gtk.Window):
 		self.switch6_page1.connect("notify::active", self.save_state, label6_page1)
 		grid_page1.attach(self.switch6_page1, 2, 6, 1, 1)
 
+		# Separator for Output Options
+		separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL, margin_top=10, margin_bottom=10)
+		grid_page1.attach(separator, 1, 7, 2, 1) # Spanning 2 columns
+
+		# Output Mode Label
+		label_output_mode = Gtk.Label(label="Output Mode:")
+		label_output_mode.set_halign(Gtk.Align.START)
+		grid_page1.attach(label_output_mode, 1, 8, 1, 1)
+
+		# Output Mode Radio Buttons Box
+		radio_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+		self.radio_pdf = Gtk.RadioButton.new_with_label(None, "Create Searchable PDF")
+		self.radio_pdf.connect("toggled", self.save_state_output_mode)
+		radio_box.add(self.radio_pdf)
+
+		self.radio_sidecar = Gtk.RadioButton.new_with_label_from_widget(self.radio_pdf, "Add Sidecar TXT to Archive (Converts CBR to CBZ)")
+		self.radio_sidecar.connect("toggled", self.save_state_output_mode)
+		radio_box.add(self.radio_sidecar)
+		
+		grid_page1.attach(radio_box, 2, 8, 1, 1)
+
+		# New Archive Checkbox
+		self.check_new_archive = Gtk.CheckButton(label="Create new archive for sidecar (uncheck to modify original)")
+		self.check_new_archive.connect("toggled", self.save_state_new_archive_checkbox)
+		grid_page1.attach(self.check_new_archive, 2, 9, 1, 1) # Placed below radio buttons
+
+		# Set initial states for output mode and checkbox
+		if self.main.ocrmypdfsettings.get("output_mode", "pdf") == "sidecar_txt":
+			self.radio_sidecar.set_active(True)
+			self.check_new_archive.set_sensitive(True)
+		else:
+			self.radio_pdf.set_active(True)
+			self.check_new_archive.set_sensitive(False)
+		
+		self.check_new_archive.set_active(self.main.ocrmypdfsettings.get("new_archive_on_sidecar", True))
+
 
 		self.page1.add(grid_page1)
 
@@ -449,6 +535,24 @@ class SettingsWindow(Gtk.Window):
 			print("Error calling save_state function")
 
 		self.main.save_settings()
+
+	def save_state_output_mode(self, widget):
+		if widget.get_active(): # Process only the active radio button
+			if self.radio_pdf.get_active():
+				self.main.ocrmypdfsettings["output_mode"] = "pdf"
+				self.check_new_archive.set_sensitive(False)
+				print("Set output_mode to pdf")
+			elif self.radio_sidecar.get_active():
+				self.main.ocrmypdfsettings["output_mode"] = "sidecar_txt"
+				self.check_new_archive.set_sensitive(True)
+				print("Set output_mode to sidecar_txt")
+			self.main.save_settings()
+
+	def save_state_new_archive_checkbox(self, widget):
+		self.main.ocrmypdfsettings["new_archive_on_sidecar"] = widget.get_active()
+		print(f"Set new_archive_on_sidecar to {widget.get_active()}")
+		self.main.save_settings()
+
 
 def run():
 	win = MainWindow()
