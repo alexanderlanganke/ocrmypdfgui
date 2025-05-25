@@ -19,6 +19,7 @@ environment:
 
 apps:
   ocrmypdfgui:
+    command: python3 -m ocrmypdfgui
     desktop: $SNAPCRAFT_PROJECT_DIR/gui/ocrmypdfgui.desktop
     extensions: [gnome-3-38]
 
