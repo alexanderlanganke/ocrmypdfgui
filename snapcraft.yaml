@@ -19,7 +19,7 @@ environment:
 
 apps:
   ocrmypdfgui:
-    command: usr/bin/ocrmypdfgui # Should be placed here by the modified override-build + prime
+    command: usr/bin/ocrmypdfgui 
     desktop: gui/ocrmypdfgui.desktop # Expects prime/gui/ocrmypdfgui.desktop
     extensions: [gnome-3-38] 
     plugs:
@@ -39,6 +39,8 @@ parts:
       - python3-setuptools
       - python3-pip
       - python3-wheel
+      - findutils # Added for the find command in override-build
+
     python-packages:
       - cffi
       - coloredlogs
@@ -58,51 +60,68 @@ parts:
     override-build: |
       set -x
       echo "## Starting override-build for ocrmypdfgui part ##"
-      snapcraftctl build # This creates venv, installs packages, and runs pip install .
+      snapcraftctl build
       
-      echo "--- Manually staging ocrmypdfgui script within the part's install directory ---"
-      SCRIPT_IN_VENV="$SNAPCRAFT_PART_INSTALL/bin/ocrmypdfgui"
-      DEST_BIN_IN_PART_INSTALL="$SNAPCRAFT_PART_INSTALL/usr/bin" 
-      
-      if [ -f "$SCRIPT_IN_VENV" ]; then
-        echo "Found script at $SCRIPT_IN_VENV"
-        mkdir -p "$DEST_BIN_IN_PART_INSTALL"
-        echo "Copying $SCRIPT_IN_VENV to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
-        cp "$SCRIPT_IN_VENV" "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
-        chmod +x "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
-        echo "Copied ocrmypdfgui to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui and made executable."
+      echo "--- Locating ocrmypdfgui script within $SNAPCRAFT_PART_INSTALL ---"
+      SCRIPT_IN_VENV_BIN="$SNAPCRAFT_PART_INSTALL/bin/ocrmypdfgui"
+      FOUND_SCRIPT_PATH=""
+
+      if [ -f "$SCRIPT_IN_VENV_BIN" ]; then
+        echo "Script found at standard venv path: $SCRIPT_IN_VENV_BIN"
+        FOUND_SCRIPT_PATH="$SCRIPT_IN_VENV_BIN"
       else
-        echo "ERROR during override-build: ocrmypdfgui script NOT found at $SCRIPT_IN_VENV after 'snapcraftctl build'."
-        ls -la "$SNAPCRAFT_PART_INSTALL/bin/" || true 
+        echo "Script NOT in $SCRIPT_IN_VENV_BIN. Searching elsewhere in $SNAPCRAFT_PART_INSTALL..."
+        # Ensure find exits 0 even if not found, to not stop the script with set -e (if it were set)
+        FOUND_SCRIPT_PATH=$(find "$SNAPCRAFT_PART_INSTALL" -name ocrmypdfgui -type f -print -quit 2>/dev/null) || true
+        if [ -n "$FOUND_SCRIPT_PATH" ]; then
+          echo "Script found at non-standard path: $FOUND_SCRIPT_PATH"
+        else
+          echo "ERROR: ocrmypdfgui script NOT FOUND anywhere within $SNAPCRAFT_PART_INSTALL after 'snapcraftctl build'."
+          echo "Listing contents of $SNAPCRAFT_PART_INSTALL/bin/ for debugging:"
+          ls -la "$SNAPCRAFT_PART_INSTALL/bin/" || true
+        fi
+      fi
+      
+      if [ -n "$FOUND_SCRIPT_PATH" ]; then
+        echo "--- Staging found ocrmypdfgui script to $SNAPCRAFT_PART_INSTALL/usr/bin/ ---"
+        DEST_BIN_IN_PART_INSTALL="$SNAPCRAFT_PART_INSTALL/usr/bin"
+        mkdir -p "$DEST_BIN_IN_PART_INSTALL"
+        cp "$FOUND_SCRIPT_PATH" "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
+        chmod +x "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
+        echo "Copied $FOUND_SCRIPT_PATH to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui."
+      else
+        echo "WARNING: No ocrmypdfgui script found to stage into part's /usr/bin."
       fi
       echo "## End of override-build for ocrmypdfgui part ##"
+
     override-prime: |
       set -x 
-      # Run default prime actions for this part.
-      snapcraftctl prime
+      snapcraftctl prime 
       
       echo "--- Manually staging .desktop file and icon for priming ---"
-      # Source directory for these assets within the part's source directory
-      ASSETS_SOURCE_DIR="$SNAPCRAFT_PART_DIR/gui"
-      
-      # Destination directory in $SNAPCRAFT_PRIME where snapcraft expects to find them
-      # for the `desktop:` and `icon:` keys (e.g., gui/file.desktop)
+      # $SNAPCRAFT_PART_SRC should point to the source files of the part within the build.
+      ASSETS_SOURCE_DIR="$SNAPCRAFT_PART_SRC/gui" 
+
       DEST_GUI_DIR_IN_PRIME="$SNAPCRAFT_PRIME/gui"
       
       mkdir -p "$DEST_GUI_DIR_IN_PRIME"
       
-      if [ -f "$ASSETS_SOURCE_DIR/ocrmypdfgui.desktop" ]; then
-        cp "$ASSETS_SOURCE_DIR/ocrmypdfgui.desktop" "$DEST_GUI_DIR_IN_PRIME/"
-        echo "Copied ocrmypdfgui.desktop to $DEST_GUI_DIR_IN_PRIME/"
+      if [ -d "$ASSETS_SOURCE_DIR" ]; then
+        if [ -f "$ASSETS_SOURCE_DIR/ocrmypdfgui.desktop" ]; then
+          cp "$ASSETS_SOURCE_DIR/ocrmypdfgui.desktop" "$DEST_GUI_DIR_IN_PRIME/"
+          echo "Copied ocrmypdfgui.desktop to $DEST_GUI_DIR_IN_PRIME/"
+        else
+          echo "ERROR from override-prime: $ASSETS_SOURCE_DIR/ocrmypdfgui.desktop not found."
+        fi
+        
+        if [ -f "$ASSETS_SOURCE_DIR/ocrmypdfgui.png" ]; then
+          cp "$ASSETS_SOURCE_DIR/ocrmypdfgui.png" "$DEST_GUI_DIR_IN_PRIME/"
+          echo "Copied ocrmypdfgui.png to $DEST_GUI_DIR_IN_PRIME/"
+        else
+          echo "ERROR from override-prime: $ASSETS_SOURCE_DIR/ocrmypdfgui.png not found."
+        fi
       else
-        echo "ERROR from override-prime: $ASSETS_SOURCE_DIR/ocrmypdfgui.desktop not found."
-      fi
-      
-      if [ -f "$ASSETS_SOURCE_DIR/ocrmypdfgui.png" ]; then
-        cp "$ASSETS_SOURCE_DIR/ocrmypdfgui.png" "$DEST_GUI_DIR_IN_PRIME/"
-        echo "Copied ocrmypdfgui.png to $DEST_GUI_DIR_IN_PRIME/"
-      else
-        echo "ERROR from override-prime: $ASSETS_SOURCE_DIR/ocrmypdfgui.png not found."
+        echo "ERROR from override-prime: Assets source directory $ASSETS_SOURCE_DIR not found."
       fi
 
 
