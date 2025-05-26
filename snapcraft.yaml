@@ -5,7 +5,7 @@ version: '0.9.15' # Matched with setup.py
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
-icon: gui/ocrmypdfgui.png
+icon: gui/ocrmypdfgui.png # Expects prime/gui/ocrmypdfgui.png
 grade: stable
 confinement: strict
 
@@ -19,9 +19,8 @@ environment:
 
 apps:
   ocrmypdfgui:
-    command: usr/bin/ocrmypdfgui # This should now exist due to override-build + prime
-
-    desktop: gui/ocrmypdfgui.desktop
+    command: usr/bin/ocrmypdfgui # Should be placed here by the modified override-build + prime
+    desktop: gui/ocrmypdfgui.desktop # Expects prime/gui/ocrmypdfgui.desktop
     extensions: [gnome-3-38] 
     plugs:
       - desktop
@@ -34,7 +33,8 @@ apps:
 parts:
   ocrmypdfgui:
     plugin: python
-    source: .
+    source: . # This includes the 'gui' directory
+
     build-packages: 
       - python3-setuptools
       - python3-pip
@@ -57,49 +57,57 @@ parts:
       - tesseract-ocr-eng 
     override-build: |
       set -x
-      echo "## Starting override-build ##"
+      echo "## Starting override-build for ocrmypdfgui part ##"
+      snapcraftctl build # This creates venv, installs packages, and runs pip install .
       
-      # Run default build steps (creates venv, installs python-packages, installs project via pip install .)
-      snapcraftctl build
-      
+      echo "--- Manually staging ocrmypdfgui script within the part's install directory ---"
       SCRIPT_IN_VENV="$SNAPCRAFT_PART_INSTALL/bin/ocrmypdfgui"
-      echo "Checking for script at $SCRIPT_IN_VENV after default 'snapcraftctl build':"
-      ls -la "$SNAPCRAFT_PART_INSTALL/bin/" || true # List contents for context
+      DEST_BIN_IN_PART_INSTALL="$SNAPCRAFT_PART_INSTALL/usr/bin" 
       
       if [ -f "$SCRIPT_IN_VENV" ]; then
-        echo "Script $SCRIPT_IN_VENV found after default 'snapcraftctl build'."
-      else
-        echo "ERROR: Script $SCRIPT_IN_VENV NOT found after default 'snapcraftctl build'."
-        echo "Attempting verbose re-install of local package into the existing venv..."
-        # Use the venv's pip to install the project.
-        # --no-deps: assumes dependencies from python-packages are already handled.
-        # --force-reinstall: try to force it even if pip thinks it's there.
-        # -vvv: maximum verbosity
-        "$SNAPCRAFT_PART_INSTALL/bin/python3" -m pip install -vvv --no-deps --force-reinstall .
-        
-        echo "Checking for script at $SCRIPT_IN_VENV after verbose re-install:"
-        if [ -f "$SCRIPT_IN_VENV" ]; then
-          echo "Script $SCRIPT_IN_VENV NOW FOUND after verbose re-install."
-        else
-          echo "CRITICAL ERROR: Script $SCRIPT_IN_VENV still not found after verbose re-install."
-          echo "Listing $SNAPCRAFT_PART_INSTALL/bin/ again:"
-          ls -la "$SNAPCRAFT_PART_INSTALL/bin/" || true
-          # To make the build fail if the script is essential and not generated:
-          # exit 1 
-        fi
-      fi
-      
-      # If the script exists (either from default build or verbose re-install), copy it.
-      if [ -f "$SCRIPT_IN_VENV" ]; then
-        echo "Proceeding to stage $SCRIPT_IN_VENV to $SNAPCRAFT_PART_INSTALL/usr/bin/"
-        DEST_BIN_IN_PART_INSTALL="$SNAPCRAFT_PART_INSTALL/usr/bin"
+        echo "Found script at $SCRIPT_IN_VENV"
         mkdir -p "$DEST_BIN_IN_PART_INSTALL"
+        echo "Copying $SCRIPT_IN_VENV to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
         cp "$SCRIPT_IN_VENV" "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
         chmod +x "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
-        echo "Copied ocrmypdfgui to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui."
+        echo "Copied ocrmypdfgui to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui and made executable."
       else
-        echo "WARNING: Script $SCRIPT_IN_VENV does not exist, cannot stage it to usr/bin within part install."
+        echo "ERROR during override-build: ocrmypdfgui script NOT found at $SCRIPT_IN_VENV after 'snapcraftctl build'."
+        ls -la "$SNAPCRAFT_PART_INSTALL/bin/" || true 
       fi
-      echo "## End of override-build ##"
-    # override-prime: (Removed to rely on override-build staging)
+      echo "## End of override-build for ocrmypdfgui part ##"
+    override-prime: |
+      set -x 
+      # Run default prime actions for this part.
+      snapcraftctl prime
+      
+      echo "--- Manually staging .desktop file and icon for priming ---"
+      # Source directory for these assets within the part's source directory
+      ASSETS_SOURCE_DIR="$SNAPCRAFT_PART_DIR/gui"
+      
+      # Destination directory in $SNAPCRAFT_PRIME where snapcraft expects to find them
+      # for the `desktop:` and `icon:` keys (e.g., gui/file.desktop)
+      DEST_GUI_DIR_IN_PRIME="$SNAPCRAFT_PRIME/gui"
+      
+      mkdir -p "$DEST_GUI_DIR_IN_PRIME"
+      
+      if [ -f "$ASSETS_SOURCE_DIR/ocrmypdfgui.desktop" ]; then
+        cp "$ASSETS_SOURCE_DIR/ocrmypdfgui.desktop" "$DEST_GUI_DIR_IN_PRIME/"
+        echo "Copied ocrmypdfgui.desktop to $DEST_GUI_DIR_IN_PRIME/"
+      else
+        echo "ERROR from override-prime: $ASSETS_SOURCE_DIR/ocrmypdfgui.desktop not found."
+      fi
+      
+      if [ -f "$ASSETS_SOURCE_DIR/ocrmypdfgui.png" ]; then
+        cp "$ASSETS_SOURCE_DIR/ocrmypdfgui.png" "$DEST_GUI_DIR_IN_PRIME/"
+        echo "Copied ocrmypdfgui.png to $DEST_GUI_DIR_IN_PRIME/"
+      else
+        echo "ERROR from override-prime: $ASSETS_SOURCE_DIR/ocrmypdfgui.png not found."
+      fi
 
+
+      echo "--- Listing $DEST_GUI_DIR_IN_PRIME (for .desktop and .icon) ---"
+      ls -la "$DEST_GUI_DIR_IN_PRIME" || true
+      echo "--- Listing $SNAPCRAFT_PRIME/usr/bin (for command) ---"
+      ls -la $SNAPCRAFT_PRIME/usr/bin || true
+      echo "--- End of override-prime for ocrmypdfgui part ---"
