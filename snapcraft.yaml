@@ -1,28 +1,27 @@
-name: ocrmypdfgui # you probably want to 'snapcraft register <name>'
+name: ocrmypdfgui
 title: ocrmypdfgui
-base: core20 # the base snap is the execution environment for this snap
-version: '0.9.08' # just for humans, typically '1.2+git' or '1.3.2'
+base: core20
+version: '0.9.15' # Matched with setup.py
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
 icon: gui/ocrmypdfgui.png
-grade: stable # must be 'stable' to release into candidate/stable channels
-confinement: strict # use 'strict' once you have the right plugs and slots
-#
+grade: stable
+confinement: strict
+
 architectures: [amd64]
 
 environment:
-    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
-    GS_LIB: $SNAP/usr/share/ghostscript/9.50/Resource/Init
-    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.50/Resource/Font
+    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata # Verify version from staged tesseract
+    GS_LIB: $SNAP/usr/share/ghostscript/9.50/Resource/Init     # Verify version from staged ghostscript
+    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.50/Resource/Font # Verify version from staged ghostscript
     LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
 
 apps:
   ocrmypdfgui:
-    command: python3 -m ocrmypdfgui
-    desktop: $SNAPCRAFT_PROJECT_DIR/gui/ocrmypdfgui.desktop
-    extensions: [gnome-3-38]
-
+    command: usr/bin/ocrmypdfgui # Should be placed here by the modified override-build + prime
+    desktop: gui/ocrmypdfgui.desktop
+    extensions: [gnome-3-38] 
     plugs:
       - desktop
       - desktop-legacy
@@ -31,29 +30,52 @@ apps:
       - home
       - removable-media
 
-
 parts:
   ocrmypdfgui:
-    # See 'snapcraft plugins'
     plugin: python
-    source: 
-
+    source: .
+    build-packages: 
+      - python3-setuptools
+      - python3-pip
+      - python3-wheel
     python-packages:
-      - cffi  # must be a setup and install requirement
+      - cffi
+      - coloredlogs
+      - img2pdf
+      - ocrmypdf
       - pdfminer.six
       - pikepdf
       - Pillow
       - pluggy
+      - pytesseract
+      - rarfile
       - reportlab
-      - setuptools
       - tqdm
-      - pipe
-
+    stage-packages:
+      - ghostscript
+      - tesseract-ocr-eng 
     override-build: |
-      ln -sf ../usr/lib/libsnapcraft-preload.so $SNAPCRAFT_PART_INSTALL/lib/libsnapcraft-preload.so
-      rm -rf $SNAPCRAFT_PART_INSTALL/usr/lib/python3.9/distutils
-      cp -r /usr/lib/python3.9/distutils $SNAPCRAFT_PART_INSTALL/usr/lib/python3.9/distutils
-      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/include/
-      cp -r /usr/include/python3.9 $SNAPCRAFT_PART_INSTALL/usr/include/python3.9
+      set -x
+      # Default build steps (creates venv, runs pip install for python-packages and setup.py)
       snapcraftctl build
-
+      
+      echo "--- Manually staging ocrmypdfgui script within the part's install directory ---"
+      # $SNAPCRAFT_PART_INSTALL is the root of this part's installation area (e.g., parts/<part-name>/install)
+      # This is where the venv is created by `snapcraftctl build` for the python plugin.
+      SCRIPT_IN_VENV="$SNAPCRAFT_PART_INSTALL/bin/ocrmypdfgui"
+      # We want to place the script into a standard location *within the part's install tree*
+      # that snapcraft will then pick up and place into $SNAPCRAFT_PRIME/usr/bin during the main prime stage.
+      DEST_BIN_IN_PART_INSTALL="$SNAPCRAFT_PART_INSTALL/usr/bin" 
+      
+      if [ -f "$SCRIPT_IN_VENV" ]; then
+        echo "Found script at $SCRIPT_IN_VENV"
+        mkdir -p "$DEST_BIN_IN_PART_INSTALL"
+        echo "Copying $SCRIPT_IN_VENV to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
+        cp "$SCRIPT_IN_VENV" "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
+        chmod +x "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
+        echo "Copied ocrmypdfgui to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui and made executable."
+      else
+        echo "ERROR: ocrmypdfgui script not found at $SCRIPT_IN_VENV after 'snapcraftctl build'."
+      fi
+      echo "--- End of override-build for ocrmypdfgui part ---"
+    # override-prime: (Removed to rely on override-build staging)
