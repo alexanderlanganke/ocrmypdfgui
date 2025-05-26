@@ -20,6 +20,7 @@ environment:
 apps:
   ocrmypdfgui:
     command: usr/bin/ocrmypdfgui # This should now exist due to override-build + prime
+
     desktop: gui/ocrmypdfgui.desktop
     extensions: [gnome-3-38] 
     plugs:
@@ -101,3 +102,4 @@ parts:
       fi
       echo "## End of override-build ##"
     # override-prime: (Removed to rely on override-build staging)
+
