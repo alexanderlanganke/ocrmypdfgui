@@ -19,7 +19,7 @@ environment:
 
 apps:
   ocrmypdfgui:
-    command: ocrmypdfgui # Changed from 'python3 -m ocrmypdfgui'
+    command: usr/bin/ocrmypdfgui # Changed to usr/bin/ocrmypdfgui
     desktop: gui/ocrmypdfgui.desktop
     extensions: [gnome-3-38] # This provides PyGObject and other GTK dependencies
     plugs:
