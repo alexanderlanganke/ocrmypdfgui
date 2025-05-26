@@ -1,6 +1,6 @@
 name: ocrmypdfgui
 title: ocrmypdfgui
-base: core20
+base: core24
 version: '0.9.15' # Matched with setup.py
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
@@ -9,7 +9,7 @@ icon: gui/ocrmypdfgui.png # Expects prime/gui/ocrmypdfgui.png
 grade: stable
 confinement: strict
 
-architectures: [amd64]
+platforms: [ubuntu-24.04-amd64]
 
 environment:
     TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata # Verify version from staged tesseract
@@ -21,7 +21,7 @@ apps:
   ocrmypdfgui:
     command: usr/bin/ocrmypdfgui 
     desktop: gui/ocrmypdfgui.desktop # Expects prime/gui/ocrmypdfgui.desktop
-    extensions: [gnome-3-38] 
+    extensions: [gnome] 
     plugs:
       - desktop
       - desktop-legacy
@@ -41,19 +41,7 @@ parts:
       - python3-wheel
       - findutils # Added for the find command in override-build
 
-    python-packages:
-      - cffi
-      - coloredlogs
-      - img2pdf
-      - ocrmypdf
-      - pdfminer.six
-      - pikepdf
-      - Pillow
-      - pluggy
-      - pytesseract
-      - rarfile
-      - reportlab
-      - tqdm
+    python-packages: []
     stage-packages:
       - ghostscript
       - tesseract-ocr-eng 
@@ -61,6 +49,14 @@ parts:
       set -x
       echo "## Starting override-build for ocrmypdfgui part ##"
       snapcraftctl build
+      echo "--- Upgrading pip, setuptools, wheel in venv ---"
+      $SNAPCRAFT_PART_INSTALL/bin/python -m pip install -U pip setuptools wheel
+      echo "--- Explicitly running pip install -v . ---"
+      $SNAPCRAFT_PART_INSTALL/bin/python -m pip install -v .
+      echo "--- Listing content of $SNAPCRAFT_PART_INSTALL (recursively) ---"
+      ls -Rla $SNAPCRAFT_PART_INSTALL/
+      echo "--- Listing content of $SNAPCRAFT_PART_INSTALL/bin/ (specifically) ---"
+      ls -la $SNAPCRAFT_PART_INSTALL/bin/
       
       echo "--- Locating ocrmypdfgui script within $SNAPCRAFT_PART_INSTALL ---"
       SCRIPT_IN_VENV_BIN="$SNAPCRAFT_PART_INSTALL/bin/ocrmypdfgui"
