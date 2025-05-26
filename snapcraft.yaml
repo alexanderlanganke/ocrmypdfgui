@@ -34,11 +34,13 @@ parts:
   ocrmypdfgui:
     plugin: python
     source: . # This includes the 'gui' directory
+
     build-packages: 
       - python3-setuptools
       - python3-pip
       - python3-wheel
       - findutils # Added for the find command in override-build
+
     python-packages:
       - cffi
       - coloredlogs
@@ -99,6 +101,7 @@ parts:
       echo "--- Manually staging .desktop file and icon for priming ---"
       # $SNAPCRAFT_PART_SRC should point to the source files of the part within the build.
       ASSETS_SOURCE_DIR="$SNAPCRAFT_PART_SRC/gui" 
+
       DEST_GUI_DIR_IN_PRIME="$SNAPCRAFT_PRIME/gui"
       
       mkdir -p "$DEST_GUI_DIR_IN_PRIME"
@@ -120,6 +123,7 @@ parts:
       else
         echo "ERROR from override-prime: Assets source directory $ASSETS_SOURCE_DIR not found."
       fi
+
 
       echo "--- Listing $DEST_GUI_DIR_IN_PRIME (for .desktop and .icon) ---"
       ls -la "$DEST_GUI_DIR_IN_PRIME" || true
