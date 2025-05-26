@@ -1,7 +1,8 @@
 name: ocrmypdfgui
 title: ocrmypdfgui
 base: core24
-version: '0.9.16' # Matched with setup.py
+version: '0.9.15' # Matched with setup.py
+
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
@@ -21,7 +22,7 @@ apps:
   ocrmypdfgui:
     command: usr/bin/ocrmypdfgui 
     desktop: gui/ocrmypdfgui.desktop # Expects prime/gui/ocrmypdfgui.desktop
-    extensions: [gnome-3-38] 
+    extensions: [gnome] 
     plugs:
       - desktop
       - desktop-legacy
@@ -49,6 +50,14 @@ parts:
       set -x
       echo "## Starting override-build for ocrmypdfgui part ##"
       snapcraftctl build
+      echo "--- Upgrading pip, setuptools, wheel in venv ---"
+      $SNAPCRAFT_PART_INSTALL/bin/python -m pip install -U pip setuptools wheel
+      echo "--- Explicitly running pip install -v . ---"
+      $SNAPCRAFT_PART_INSTALL/bin/python -m pip install -v .
+      echo "--- Listing content of $SNAPCRAFT_PART_INSTALL (recursively) ---"
+      ls -Rla $SNAPCRAFT_PART_INSTALL/
+      echo "--- Listing content of $SNAPCRAFT_PART_INSTALL/bin/ (specifically) ---"
+      ls -la $SNAPCRAFT_PART_INSTALL/bin/
       
       echo "--- Locating ocrmypdfgui script within $SNAPCRAFT_PART_INSTALL ---"
       SCRIPT_IN_VENV_BIN="$SNAPCRAFT_PART_INSTALL/bin/ocrmypdfgui"
