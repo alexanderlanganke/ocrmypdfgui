@@ -19,7 +19,7 @@ environment:
 
 apps:
   ocrmypdfgui:
-    command: usr/bin/ocrmypdfgui # This should now exist due to override-prime
+    command: usr/bin/ocrmypdfgui # Should be placed here by the modified override-build + prime
     desktop: gui/ocrmypdfgui.desktop
     extensions: [gnome-3-38] 
     plugs:
@@ -55,34 +55,28 @@ parts:
       - ghostscript
       - tesseract-ocr-eng 
     override-build: |
-      ln -sf ../usr/lib/libsnapcraft-preload.so $SNAPCRAFT_PART_INSTALL/lib/libsnapcraft-preload.so
+      set -x
+      # Default build steps (creates venv, runs pip install for python-packages and setup.py)
       snapcraftctl build
-    override-prime: |
-      set -x 
-      # Run default prime actions first.
-      snapcraftctl prime
       
-      echo "--- Manually staging ocrmypdfgui script from part's build artifacts ---"
-      # $SNAPCRAFT_PART_DIR points to the current part's directory in parts/
-      # The venv was created in $SNAPCRAFT_PART_DIR/install during the build step of the part.
-      SOURCE_SCRIPT="$SNAPCRAFT_PART_DIR/install/bin/ocrmypdfgui"
+      echo "--- Manually staging ocrmypdfgui script within the part's install directory ---"
+      # $SNAPCRAFT_PART_INSTALL is the root of this part's installation area (e.g., parts/<part-name>/install)
+      # This is where the venv is created by `snapcraftctl build` for the python plugin.
+      SCRIPT_IN_VENV="$SNAPCRAFT_PART_INSTALL/bin/ocrmypdfgui"
+      # We want to place the script into a standard location *within the part's install tree*
+      # that snapcraft will then pick up and place into $SNAPCRAFT_PRIME/usr/bin during the main prime stage.
+      DEST_BIN_IN_PART_INSTALL="$SNAPCRAFT_PART_INSTALL/usr/bin" 
       
-      DEST_DIR="$SNAPCRAFT_PRIME/usr/bin"
-      DEST_SCRIPT_PATH="$DEST_DIR/ocrmypdfgui"
-      
-      if [ -f "$SOURCE_SCRIPT" ]; then
-        echo "Found script at $SOURCE_SCRIPT"
-        mkdir -p "$DEST_DIR"
-        echo "Copying $SOURCE_SCRIPT to $DEST_SCRIPT_PATH"
-        cp "$SOURCE_SCRIPT" "$DEST_SCRIPT_PATH"
-        chmod +x "$DEST_SCRIPT_PATH"
-        echo "Copied ocrmypdfgui to $DEST_SCRIPT_PATH and made executable."
+      if [ -f "$SCRIPT_IN_VENV" ]; then
+        echo "Found script at $SCRIPT_IN_VENV"
+        mkdir -p "$DEST_BIN_IN_PART_INSTALL"
+        echo "Copying $SCRIPT_IN_VENV to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
+        cp "$SCRIPT_IN_VENV" "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
+        chmod +x "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
+        echo "Copied ocrmypdfgui to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui and made executable."
       else
-        echo "ERROR: ocrmypdfgui script not found at $SOURCE_SCRIPT. This is unexpected."
+        echo "ERROR: ocrmypdfgui script not found at $SCRIPT_IN_VENV after 'snapcraftctl build'."
       fi
+      echo "--- End of override-build for ocrmypdfgui part ---"
+    # override-prime: (Removed to rely on override-build staging)
 
-      echo "--- Final check for ocrmypdfgui in prime/usr/bin ---"
-      ls -la "$DEST_SCRIPT_PATH" || echo "ocrmypdfgui still not in $DEST_SCRIPT_PATH after manual copy."
-      echo "--- Listing $SNAPCRAFT_PRIME/usr/bin (after attempting copy) ---"
-      ls -la $SNAPCRAFT_PRIME/usr/bin || true
-      echo "--- End of override-prime for ocrmypdfgui part ---"
