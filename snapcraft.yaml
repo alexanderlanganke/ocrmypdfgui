@@ -34,7 +34,7 @@ parts:
   ocrmypdfgui:
     plugin: python
     source: .
-    build-packages: 
+    build-packages: # Ensures these are present for venv creation by the plugin
       - python3-setuptools
       - python3-pip
       - python3-wheel
