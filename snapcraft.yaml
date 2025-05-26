@@ -34,7 +34,7 @@ parts:
   ocrmypdfgui:
     plugin: python
     source: .
-    build-packages:
+    build-packages: # Ensures these are present for venv creation by the plugin
       - python3-setuptools
       - python3-pip
       - python3-wheel
@@ -47,13 +47,12 @@ parts:
       - pikepdf
       - Pillow
       - pluggy
-      # PyGObject is removed from here - it will be provided by the gnome-3-38 extension
       - pytesseract
       - rarfile
       - reportlab
-      - setuptools
+      # setuptools # Removed - venv should provide its own
       - tqdm
-      - wheel
+      # wheel      # Removed - venv should provide its own
     stage-packages:
       - ghostscript
       - tesseract-ocr-eng # For English. Use tesseract-ocr-all for all languages (larger snap)
