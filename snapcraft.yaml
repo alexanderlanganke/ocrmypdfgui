@@ -41,19 +41,7 @@ parts:
       - python3-wheel
       - findutils # Added for the find command in override-build
 
-    python-packages:
-      - cffi
-      - coloredlogs
-      - img2pdf
-      - ocrmypdf
-      - pdfminer.six
-      - pikepdf
-      - Pillow
-      - pluggy
-      - pytesseract
-      - rarfile
-      - reportlab
-      - tqdm
+    python-packages: []
     stage-packages:
       - ghostscript
       - tesseract-ocr-eng 
