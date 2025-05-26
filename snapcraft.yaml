@@ -1,28 +1,27 @@
-name: ocrmypdfgui # you probably want to 'snapcraft register <name>'
+name: ocrmypdfgui
 title: ocrmypdfgui
-base: core20 # the base snap is the execution environment for this snap
-version: '0.9.08' # just for humans, typically '1.2+git' or '1.3.2'
+base: core20
+version: '0.9.15' # Matched with setup.py
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
 icon: gui/ocrmypdfgui.png
-grade: stable # must be 'stable' to release into candidate/stable channels
-confinement: strict # use 'strict' once you have the right plugs and slots
-#
+grade: stable
+confinement: strict
+
 architectures: [amd64]
 
 environment:
-    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
-    GS_LIB: $SNAP/usr/share/ghostscript/9.50/Resource/Init
-    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.50/Resource/Font
+    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata # Verify version from staged tesseract
+    GS_LIB: $SNAP/usr/share/ghostscript/9.50/Resource/Init     # Verify version from staged ghostscript
+    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.50/Resource/Font # Verify version from staged ghostscript
     LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
 
 apps:
   ocrmypdfgui:
-    command: python3 -m ocrmypdfgui
-    desktop: $SNAPCRAFT_PROJECT_DIR/gui/ocrmypdfgui.desktop
-    extensions: [gnome-3-38]
-
+    command: ocrmypdfgui # Changed from 'python3 -m ocrmypdfgui'
+    desktop: gui/ocrmypdfgui.desktop
+    extensions: [gnome-3-38] # This provides PyGObject and other GTK dependencies
     plugs:
       - desktop
       - desktop-legacy
@@ -31,29 +30,32 @@ apps:
       - home
       - removable-media
 
-
 parts:
   ocrmypdfgui:
-    # See 'snapcraft plugins'
     plugin: python
-    source: 
-
+    source: .
+    build-packages: # Ensures these are present for venv creation by the plugin
+      - python3-setuptools
+      - python3-pip
+      - python3-wheel
     python-packages:
-      - cffi  # must be a setup and install requirement
+      - cffi
+      - coloredlogs
+      - img2pdf
+      - ocrmypdf
       - pdfminer.six
       - pikepdf
       - Pillow
       - pluggy
+      - pytesseract
+      - rarfile
       - reportlab
-      - setuptools
+      # setuptools # Removed - venv should provide its own
       - tqdm
-      - pipe
-
+      # wheel      # Removed - venv should provide its own
+    stage-packages:
+      - ghostscript
+      - tesseract-ocr-eng # For English. Use tesseract-ocr-all for all languages (larger snap)
     override-build: |
       ln -sf ../usr/lib/libsnapcraft-preload.so $SNAPCRAFT_PART_INSTALL/lib/libsnapcraft-preload.so
-      rm -rf $SNAPCRAFT_PART_INSTALL/usr/lib/python3.9/distutils
-      cp -r /usr/lib/python3.9/distutils $SNAPCRAFT_PART_INSTALL/usr/lib/python3.9/distutils
-      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/include/
-      cp -r /usr/include/python3.9 $SNAPCRAFT_PART_INSTALL/usr/include/python3.9
       snapcraftctl build
-
