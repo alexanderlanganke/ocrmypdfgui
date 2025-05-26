@@ -19,9 +19,9 @@ environment:
 
 apps:
   ocrmypdfgui:
-    command: usr/bin/ocrmypdfgui # Changed to usr/bin/ocrmypdfgui
+    command: usr/bin/ocrmypdfgui # Keeping this for now, diagnostics will guide if it's wrong
     desktop: gui/ocrmypdfgui.desktop
-    extensions: [gnome-3-38] # This provides PyGObject and other GTK dependencies
+    extensions: [gnome-3-38] 
     plugs:
       - desktop
       - desktop-legacy
@@ -50,12 +50,29 @@ parts:
       - pytesseract
       - rarfile
       - reportlab
-      # setuptools # Removed - venv should provide its own
       - tqdm
-      # wheel      # Removed - venv should provide its own
     stage-packages:
       - ghostscript
-      - tesseract-ocr-eng # For English. Use tesseract-ocr-all for all languages (larger snap)
+      - tesseract-ocr-eng 
     override-build: |
       ln -sf ../usr/lib/libsnapcraft-preload.so $SNAPCRAFT_PART_INSTALL/lib/libsnapcraft-preload.so
       snapcraftctl build
+    override-prime: |
+      set -x # Enable verbose output for this script block
+      snapcraftctl prime
+      echo "--- Listing common bin directories in prime stage ---"
+      echo "Listing $SNAPCRAFT_PRIME/usr/bin:"
+      ls -la $SNAPCRAFT_PRIME/usr/bin || echo "Failed to list $SNAPCRAFT_PRIME/usr/bin"
+      echo "Listing $SNAPCRAFT_PRIME/bin:"
+      ls -la $SNAPCRAFT_PRIME/bin || echo "Failed to list $SNAPCRAFT_PRIME/bin"
+      echo "Listing $SNAPCRAFT_PRIME/snap/bin:"
+      ls -la $SNAPCRAFT_PRIME/snap/bin || echo "Failed to list $SNAPCRAFT_PRIME/snap/bin"
+      
+      echo "--- Searching for ocrmypdfgui and python3 in prime stage ---"
+      echo "Finding ocrmypdfgui:"
+      find $SNAPCRAFT_PRIME -name ocrmypdfgui -ls || echo "ocrmypdfgui not found"
+      echo "Finding python3 related files/dirs (NO FOLLOW):"
+      find $SNAPCRAFT_PRIME -name python3 -ls || echo "python3 not found (no symlink follow)"
+      echo "Finding python3 related files/dirs (FOLLOW SYMLINKS in search path):"
+      find -L $SNAPCRAFT_PRIME -name python3 -ls || echo "python3 not found (symlink follow in search)"
+      echo "--- End of diagnostic lists ---"
