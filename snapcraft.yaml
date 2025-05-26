@@ -21,7 +21,7 @@ apps:
   ocrmypdfgui:
     command: usr/bin/ocrmypdfgui # This should now exist due to override-prime
     desktop: gui/ocrmypdfgui.desktop
-    extensions: [gnome-3-38]
+    extensions: [gnome-3-38] 
     plugs:
       - desktop
       - desktop-legacy
@@ -34,7 +34,7 @@ parts:
   ocrmypdfgui:
     plugin: python
     source: .
-    build-packages:
+    build-packages: 
       - python3-setuptools
       - python3-pip
       - python3-wheel
@@ -53,37 +53,36 @@ parts:
       - tqdm
     stage-packages:
       - ghostscript
-      - tesseract-ocr-eng
+      - tesseract-ocr-eng 
     override-build: |
       ln -sf ../usr/lib/libsnapcraft-preload.so $SNAPCRAFT_PART_INSTALL/lib/libsnapcraft-preload.so
       snapcraftctl build
     override-prime: |
-      set -x
+      set -x 
+      # Run default prime actions first.
       snapcraftctl prime
-
-      echo "--- Manually staging ocrmypdfgui script ---"
-      SOURCE_SCRIPT_IN_PART_INSTALL="$SNAPCRAFT_PART_INSTALL/bin/ocrmypdfgui"
+      
+      echo "--- Manually staging ocrmypdfgui script from part's build artifacts ---"
+      # $SNAPCRAFT_PART_DIR points to the current part's directory in parts/
+      # The venv was created in $SNAPCRAFT_PART_DIR/install during the build step of the part.
+      SOURCE_SCRIPT="$SNAPCRAFT_PART_DIR/install/bin/ocrmypdfgui"
+      
       DEST_DIR="$SNAPCRAFT_PRIME/usr/bin"
       DEST_SCRIPT_PATH="$DEST_DIR/ocrmypdfgui"
-
-      if [ -f "$SOURCE_SCRIPT_IN_PART_INSTALL" ]; then
-        echo "Found script at $SOURCE_SCRIPT_IN_PART_INSTALL"
+      
+      if [ -f "$SOURCE_SCRIPT" ]; then
+        echo "Found script at $SOURCE_SCRIPT"
         mkdir -p "$DEST_DIR"
-        echo "Copying $SOURCE_SCRIPT_IN_PART_INSTALL to $DEST_SCRIPT_PATH"
-        cp "$SOURCE_SCRIPT_IN_PART_INSTALL" "$DEST_SCRIPT_PATH"
+        echo "Copying $SOURCE_SCRIPT to $DEST_SCRIPT_PATH"
+        cp "$SOURCE_SCRIPT" "$DEST_SCRIPT_PATH"
         chmod +x "$DEST_SCRIPT_PATH"
         echo "Copied ocrmypdfgui to $DEST_SCRIPT_PATH and made executable."
       else
-        echo "ERROR: ocrmypdfgui script not found at $SOURCE_SCRIPT_IN_PART_INSTALL. Cannot manually stage it."
+        echo "ERROR: ocrmypdfgui script not found at $SOURCE_SCRIPT. This is unexpected."
       fi
 
       echo "--- Final check for ocrmypdfgui in prime/usr/bin ---"
-      # Using a command that lists directory contents to verify
-      # but avoiding the forbidden "ls" command directly.
-      # This will output the details of the specific file if it exists.
-      find "$DEST_SCRIPT_PATH" -maxdepth 0 -ls 2>/dev/null || echo "ocrmypdfgui still not in $DEST_SCRIPT_PATH after manual copy."
-      echo "--- Listing contents of $SNAPCRAFT_PRIME/usr/bin ---"
-      # Using a command that lists directory contents to verify
-      # but avoiding the forbidden "ls" command directly.
-      find "$SNAPCRAFT_PRIME/usr/bin" -maxdepth 1 -ls 2>/dev/null || true
+      ls -la "$DEST_SCRIPT_PATH" || echo "ocrmypdfgui still not in $DEST_SCRIPT_PATH after manual copy."
+      echo "--- Listing $SNAPCRAFT_PRIME/usr/bin (after attempting copy) ---"
+      ls -la $SNAPCRAFT_PRIME/usr/bin || true
       echo "--- End of override-prime for ocrmypdfgui part ---"
