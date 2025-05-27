@@ -85,7 +85,8 @@ parts:
         mkdir -p "$DEST_BIN_IN_PART_INSTALL"
         cp "$FOUND_SCRIPT_PATH" "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
         chmod +x "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
-        echo "Copied $FOUND_SCRIPT_PATH to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui."
+        sed -i '1s|^#!.*python.*$|#!/usr/bin/env python3|' "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
+        echo "Copied $FOUND_SCRIPT_PATH to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui and updated shebang."
       else
         echo "WARNING: No ocrmypdfgui script found to stage into part's /usr/bin."
       fi
