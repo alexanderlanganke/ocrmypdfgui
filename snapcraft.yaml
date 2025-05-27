@@ -10,7 +10,7 @@ icon: gui/ocrmypdfgui.png # Expects prime/gui/ocrmypdfgui.png
 grade: stable
 confinement: strict
 
-platforms: [ubuntu-24.04-amd64]
+# platforms: [ubuntu-24.04-amd64]
 
 environment:
     TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata # Verify version from staged tesseract
@@ -22,7 +22,7 @@ apps:
   ocrmypdfgui:
     command: usr/bin/ocrmypdfgui 
     desktop: gui/ocrmypdfgui.desktop # Expects prime/gui/ocrmypdfgui.desktop
-    extensions: [gnome] 
+    extensions: [ gnome ] 
     plugs:
       - desktop
       - desktop-legacy
@@ -42,7 +42,7 @@ parts:
       - python3-wheel
       - findutils # Added for the find command in override-build
 
-    python-packages: []
+    # python-packages: []
     stage-packages:
       - ghostscript
       - tesseract-ocr-eng 
