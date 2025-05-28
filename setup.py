@@ -28,13 +28,12 @@ setuptools.setup(
         'coloredlogs >= 14.0',  # strictly optional
         'img2pdf >= 0.3.0, < 0.5',  # pure Python, so track HEAD closely
         'pdfminer.six >= 20191110, != 20200720, <= 20201018',
-        "pikepdf >= 2.10.0",
         'Pillow >= 8.1.2',
         'pluggy >= 0.13.0, < 1.0',
         'reportlab >= 3.5.66',
         'setuptools',
         'tqdm >= 4',
-        'ocrmypdf >= 12.0.2',
+        'ocrmypdf >= 13.0.0',
         'pytesseract >= 0.3.8',
         'PyGObject',
         'rarfile >= 3.0'
