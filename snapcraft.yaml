@@ -17,12 +17,13 @@ environment:
     GS_LIB: $SNAP/usr/share/ghostscript/9.50/Resource/Init     # Verify version from staged ghostscript
     GS_FONTPATH: $SNAP/usr/share/ghostscript/9.50/Resource/Font # Verify version from staged ghostscript
     LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
+    GIO_MODULE_DIR: $SNAP/usr/lib/x86_64-linux-gnu/gio/modules/
 
 apps:
   ocrmypdfgui:
     command: usr/bin/ocrmypdfgui 
     desktop: gui/ocrmypdfgui.desktop # Expects prime/gui/ocrmypdfgui.desktop
-    extensions: [ gnome ] 
+    extensions: [ gnome ]
     plugs:
       - desktop
       - desktop-legacy
@@ -45,15 +46,28 @@ parts:
     # python-packages: []
     stage-packages:
       - ghostscript
-      - tesseract-ocr-eng 
+      - tesseract-ocr-eng
+      - libproxy1v5
     override-build: |
       set -x
       echo "## Starting override-build for ocrmypdfgui part ##"
-      snapcraftctl build
-      echo "--- Upgrading pip, setuptools, wheel in venv ---"
-      $SNAPCRAFT_PART_INSTALL/bin/python -m pip install -U pip setuptools wheel
-      echo "--- Explicitly running pip install -v . ---"
-      $SNAPCRAFT_PART_INSTALL/bin/python -m pip install -v .
+      snapcraftctl build # Restored to allow default python plugin build actions
+
+      echo "--- 진단: 파이썬 인터프리터 확인 중 ---"
+      ls -la $SNAPCRAFT_PART_INSTALL/bin/
+      $SNAPCRAFT_PART_INSTALL/bin/python --version || echo "파이썬 버전 명령 실패"
+      echo "--- 진단: snapcraftctl build 후 설치된 패키지 (강제 stdout): ---"
+      $SNAPCRAFT_PART_INSTALL/bin/python -m pip list 2>&1 || echo "pip list 실패"
+      echo "--- 진단: ocrmypdf 세부 정보 (강제 stdout): ---"
+      $SNAPCRAFT_PART_INSTALL/bin/python -m pip show ocrmypdf 2>&1 || echo "pip show ocrmypdf 실패"
+      echo "--- 진단: pikepdf 세부 정보 (강제 stdout): ---"
+      $SNAPCRAFT_PART_INSTALL/bin/python -m pip show pikepdf 2>&1 || echo "pip show pikepdf 실패"
+
+      # The explicit pip install commands below are removed to rely on snapcraftctl build and setup.py
+      # echo "--- Upgrading pip, setuptools, wheel, setuptools_scm in venv ---"
+      # $SNAPCRAFT_PART_INSTALL/bin/python -m pip install -U pip setuptools wheel setuptools_scm
+      # echo "--- Explicitly running pip install -v . ---"
+      # $SNAPCRAFT_PART_INSTALL/bin/python -m pip install --no-cache-dir --force-reinstall -v .
       echo "--- Listing content of $SNAPCRAFT_PART_INSTALL (recursively) ---"
       ls -Rla $SNAPCRAFT_PART_INSTALL/
       echo "--- Listing content of $SNAPCRAFT_PART_INSTALL/bin/ (specifically) ---"
