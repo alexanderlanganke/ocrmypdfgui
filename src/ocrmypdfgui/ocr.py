@@ -8,11 +8,13 @@ import warnings
 import inspect
 import gi
 import time
+import logging
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gio, GLib
 
 from PIL import Image
+
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
 import pytesseract
@@ -20,6 +22,8 @@ import zipfile
 import rarfile
 import tempfile
 import shutil
+
+logger = logging.getLogger(__name__)
 
 
 def get_text_from_image(image_path, print_to_textview_func):
@@ -203,6 +207,8 @@ def ocr_archive_file(archive_path, print_to_textview_func, progressbar_batch_fun
 
                 elif output_mode == "pdf":
                     GLib.idle_add(print_to_textview_func, "Image collection and sorting complete. Starting PDF generation...\n", "default")
+                    temp_images_pdf = os.path.join(temp_dir_path, "images_combined.pdf")
+                    images_to_pdf(image_files, temp_images_pdf)
                     output_pdf_path = os.path.splitext(archive_path)[0] + "_ocr.pdf"
                     GLib.idle_add(print_to_textview_func, f"Creating searchable PDF: {output_pdf_path}\n", "default")
                     GLib.idle_add(progressbar_batch_func, 0.5) # Progress before OCR call
@@ -214,13 +220,13 @@ def ocr_archive_file(archive_path, print_to_textview_func, progressbar_batch_fun
                     try:
                         effective_settings = ocrmypdfsettings.copy()
                         if 'plugins' in effective_settings:
-                            print("Note: 'plugins' key found in ocrmypdfsettings for archive processing. Removing for compatibility.")
                             del effective_settings['plugins']
+                        filtered_settings = filter_ocrmypdf_args(effective_settings)
 
                         ocrmypdf.ocr(
-                            input_file=image_files,
+                            input_file=temp_images_pdf,
                             output_file=output_pdf_path,
-                            **effective_settings
+                            **filtered_settings
                         )
                         GLib.idle_add(print_to_textview_func, f"Searchable PDF created successfully: {output_pdf_path}\n", "success")
                         GLib.idle_add(progressbar_batch_func, 0.9)
@@ -256,7 +262,8 @@ def ocr_archive_file(archive_path, print_to_textview_func, progressbar_batch_fun
                     try:
                         effective_settings = ocrmypdfsettings.copy()
                         if 'plugins' in effective_settings: del effective_settings['plugins']
-                        ocrmypdf.ocr(input_file=image_files, output_file=output_pdf_path, **effective_settings)
+                        filtered_settings = filter_ocrmypdf_args(effective_settings)
+                        ocrmypdf.ocr(input_file=image_files, output_file=output_pdf_path, **filtered_settings)
                         GLib.idle_add(print_to_textview_func, f"Searchable PDF created successfully (fallback): {output_pdf_path}\n", "success")
                         GLib.idle_add(progressbar_batch_func, 0.9)
                     except Exception as e: # Simplified catch for fallback
@@ -288,38 +295,39 @@ def start_job(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings, 
 
 
 def ocr_run(file_path, ocrmypdfsettings, print_to_textview):
-	print(ocrmypdfsettings)
-	#runs ocrmypdf on given file
-	try:
-		print("Start OCR - " + file_path)
-#		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["plugin_progressbar"])
-		ocr = ocrmypdf.ocr(file_path, file_path, **ocrmypdfsettings, plugins=["ocrmypdfgui.plugin_progressbar"])
-		GLib.idle_add(print_to_textview, "OCR complete\n", "success")
+    print(ocrmypdfsettings)
+    # Only pass valid arguments to ocrmypdf.ocr
+    valid_args = get_api_options().keys()
+    filtered_settings = {k: v for k, v in ocrmypdfsettings.items() if k in valid_args}
+    try:
+        print("Start OCR - " + file_path)
+        filtered_settings = filter_ocrmypdf_args(ocrmypdfsettings)
+        ocr = ocrmypdf.ocr(file_path, file_path, **filtered_settings, plugins=["ocrmypdfgui.plugin_progressbar"])
+        GLib.idle_add(print_to_textview, "OCR complete\n", "success")
+        print("OCR complete.\n")
+        return "OCR complete.\n"
 
-		print("OCR complete.\n")
-		return "OCR complete.\n"
+    except ocrmypdf.exceptions.PriorOcrFoundError:
+        GLib.idle_add(print_to_textview, "Prior OCR - Skipping\n", "skip")
+        print("Prior OCR - Skipping\n")
+        return "Prior OCR - Skipping\n"
 
-	except ocrmypdf.exceptions.PriorOcrFoundError:
-		GLib.idle_add(print_to_textview, "Prior OCR - Skipping\n", "skip")
-		print("Prior OCR - Skipping\n")
-		return "Prior OCR - Skipping\n"
+    except ocrmypdf.exceptions.EncryptedPdfError:
+        GLib.idle_add(print_to_textview, "PDF File is encrypted - Skipping.\n", "error")
+        print("PDF File is encrypted. Skipping.\n")
+        return "PDF File is encrypted. Skipping.\n"
 
-	except ocrmypdf.exceptions.EncryptedPdfError:
-		GLib.idle_add(print_to_textview, "PDF File is encrypted - Skipping.\n", "error")
-		print("PDF File is encrypted. Skipping.\n")
-		return "PDF File is encrypted. Skipping.\n"
+    except ocrmypdf.exceptions.BadArgsError:
+        GLib.idle_add(print_to_textview, "Bad arguments\n", "error")
+        print("Bad arguments.\n")
 
-	except ocrmypdf.exceptions.BadArgsError:
-		GLib.idle_add(print_to_textview, "Bad arguments\n", "error")
-		print("Bad arguments.\n")
-
-	except:
-		e = sys.exc_info()
-		GLib.idle_add(print_to_textview, str(e))
-		GLib.idle_add(print_to_textview, "\n")
-		#time.sleep(0.2)
-		print(e)
-		return "Error.\n"
+    except:
+        e = sys.exc_info()
+        GLib.idle_add(print_to_textview, str(e))
+        GLib.idle_add(print_to_textview, "\n")
+        #time.sleep(0.2)
+        print(e)
+        return "Error.\n"
 
 def batch_ocr(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings, job_done_callback):
 	# walks through given path and uses OCR Function on every pdf in path
@@ -351,26 +359,26 @@ def batch_ocr(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings, 
 				# No specific result, job_done_callback will be called in finally
 		elif(os.path.isdir(dir_path)==True):
 			number_of_files = 0
-			# First pass: count PDF files for progress calculation (existing logic)
-			# TODO: Consider if CBZ/CBR in directory mode should be counted or handled.
-			# For now, directory mode only processes PDFs as per original logic.
+			# First pass: count PDF, CBZ, and CBR files for progress calculation
 			for dir_name, subdirs, file_list in os.walk(dir_path):
 				if stop_event.is_set():
 					print("OCR job cancelled.")
 					GLib.idle_add(print_to_textview, "OCR job cancelled.\n", "error")
-					break 
+					break
 				for filename in file_list:
 					if stop_event.is_set():
 						print("OCR job cancelled.")
 						GLib.idle_add(print_to_textview, "OCR job cancelled.\n", "error")
 						break
-					file_ext = os.path.splitext(filename)[1]
-					if file_ext == '.pdf':
-						number_of_files=number_of_files+1
+					file_ext = os.path.splitext(filename)[1].lower()
+					if file_ext in ['.pdf', '.cbz', '.cbr']:
+						number_of_files += 1
 
-				if number_of_files >0:
-					percent_step = 1/number_of_files	#1 = 100%
-					print("percent_step: " + str(percent_step) + " - " + "number_of_files: " + str(number_of_files))
+			if number_of_files > 0:
+				percent_step = 1 / number_of_files  # 1 = 100%
+				print("percent_step: " + str(percent_step) + " - " + "number_of_files: " + str(number_of_files))
+
+			progress_precision = 0.0
 			for dir_name, subdirs, file_list in os.walk(dir_path):
 				if stop_event.is_set():
 					print("OCR job cancelled.")
@@ -383,17 +391,24 @@ def batch_ocr(dir_path, progressbar_batch, print_to_textview, ocrmypdfsettings, 
 						print("OCR job cancelled.")
 						GLib.idle_add(print_to_textview, "OCR job cancelled.\n", "error")
 						break
-					file_ext = os.path.splitext(filename)[1]
+					file_ext = os.path.splitext(filename)[1].lower()
+					full_path = os.path.join(dir_name, filename)
 					if file_ext == '.pdf':
-						full_path = dir_name + '/' + filename
-
 						print("Path:" + full_path + "\n")
 						GLib.idle_add(print_to_textview, "File: " + full_path + " - ", "default")
 						result = ocr_run(full_path, ocrmypdfsettings, print_to_textview)
-						progress_precision = progress_precision + percent_step #necessary to hit 100 by incrementing
-						print(progress_precision)
-						GLib.idle_add(progressbar_batch, progress_precision) #sets progressbar_batch to current progress
-			# If no PDFs found in directory walk, ensure progress is set to 100%
+					elif file_ext in ['.cbz', '.cbr']:
+						print("Archive:" + full_path + "\n")
+						GLib.idle_add(print_to_textview, "Archive: " + full_path + " - ", "default")
+						ocr_archive_file(full_path, print_to_textview, progressbar_batch, ocrmypdfsettings, stop_event, job_done_callback)
+					else:
+						continue  # skip unsupported files
+
+					progress_precision += percent_step
+					print(progress_precision)
+					GLib.idle_add(progressbar_batch, progress_precision)  # sets progressbar_batch to current progress
+
+			# If no supported files found in directory walk, ensure progress is set to 100%
 			if number_of_files == 0 and not stop_event.is_set():
 				GLib.idle_add(progressbar_batch, 1.0)
 
@@ -427,3 +442,20 @@ def get_api_options():
 					dict[param.name] = str(param.annotation)[8:-2]
 
 	return dict
+
+def images_to_pdf(image_files, output_pdf_path):
+    """Convert a list of image files to a single PDF."""
+    images = []
+    for img_path in image_files:
+        img = Image.open(img_path)
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+        images.append(img)
+    if images:
+        images[0].save(output_pdf_path, save_all=True, append_images=images[1:])
+    return output_pdf_path
+
+def filter_ocrmypdf_args(settings):
+    """Return a dict with only valid ocrmypdf.ocr() keyword arguments."""
+    valid_args = get_api_options().keys()
+    return {k: v for k, v in settings.items() if k in valid_args}

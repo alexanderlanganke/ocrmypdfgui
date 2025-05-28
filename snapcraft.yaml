@@ -1,7 +1,7 @@
 name: ocrmypdfgui
 title: ocrmypdfgui
 base: core24
-version: '0.9.21' # Matched with setup.py
+version: '1.0.0' # Matched with setup.py
 
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
@@ -13,9 +13,9 @@ confinement: strict
 # platforms: [ubuntu-24.04-amd64]
 
 environment:
-    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata # Verify version from staged tesseract
-    GS_LIB: $SNAP/usr/share/ghostscript/9.50/Resource/Init     # Verify version from staged ghostscript
-    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.50/Resource/Font # Verify version from staged ghostscript
+    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/5/tessdata
+    GS_LIB: $SNAP/usr/share/ghostscript/10.02.1/Resource/Init
+    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.50/Resource/Font
     LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
     GIO_MODULE_DIR: $SNAP/usr/lib/x86_64-linux-gnu/gio/modules/
 
@@ -42,12 +42,17 @@ parts:
       - python3-pip
       - python3-wheel
       - findutils # Added for the find command in override-build
+      - libqpdf-dev
+      - g++
+      - pkg-config
 
-    # python-packages: []
+    python-packages: []
     stage-packages:
       - ghostscript
-      - tesseract-ocr-eng
+      - tesseract-ocr-all
       - libproxy1v5
+      - libqpdf29     
+
     override-build: |
       set -x
       echo "## Starting override-build for ocrmypdfgui part ##"
