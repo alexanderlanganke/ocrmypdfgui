@@ -1,7 +1,7 @@
 name: ocrmypdfgui
 title: ocrmypdfgui
 base: core24
-version: '1.0.0' # Matched with setup.py
+version: '1.0.1' # Matched with setup.py
 
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
 description: |
