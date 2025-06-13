@@ -188,15 +188,19 @@ def ocr_archive_file(archive_path, print_to_textview_func, progressbar_batch_fun
                         GLib.idle_add(progressbar_batch_func, 0.80) # Progress before zip creation
 
                         with zipfile.ZipFile(temp_output_cbz_path, 'w', zipfile.ZIP_DEFLATED) as zf_out:
-                            # Add extracted images (now relative to temp_dir_path)
-                            for item_name in os.listdir(temp_dir_path):
-                                item_full_path = os.path.join(temp_dir_path, item_name)
-                                if os.path.isfile(item_full_path) and item_name != "ocr_text.txt" and item_name != "output_temp.cbz":
-                                    # Add all original files from the temp extraction dir
-                                    zf_out.write(item_full_path, arcname=item_name)
-                            # Add OCR text file
+                            # Add all files and subdirectories from temp_dir_path, preserving structure
+                            for root_dir, dirs, files in os.walk(temp_dir_path):
+                                for file in files:
+                                    abs_file_path = os.path.join(root_dir, file)
+                                    rel_path = os.path.relpath(abs_file_path, temp_dir_path)
+                                    # Exclude temp output archive and ocr_text.txt (will add ocr_text.txt separately)
+                                    if file == "output_temp.cbz":
+                                        continue
+                                    if rel_path == "ocr_text.txt":
+                                        continue
+                                    zf_out.write(abs_file_path, arcname=rel_path)
+                            # Add OCR text file at root
                             zf_out.write(temp_text_file_path, arcname="ocr_text.txt")
-                        
                         shutil.move(temp_output_cbz_path, output_archive_path)
                         GLib.idle_add(print_to_textview_func, f"Sidecar TXT archive operation complete: {output_archive_path}\n", "success")
                         GLib.idle_add(progressbar_batch_func, 0.9)
