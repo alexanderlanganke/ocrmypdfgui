@@ -112,12 +112,16 @@ def check_system_dependencies(window):
                     else:
                         window.append_status(f"⚠ Automatic installation failed. Please install Tesseract manually from: {url}")
                 elif dep == 'ghostscript':
-                    window.append_status(f"Ghostscript not found. Please install manually.")
-                    install_ghostscript_windows(window)
+                    # Correct check for Windows Ghostscript executables
                     if shutil.which('gswin64c') or shutil.which('gswin32c'):
                         window.append_status("✔ Ghostscript installed and found in PATH")
                     else:
-                        window.append_status(f"⚠ Manual installation required. Please install Ghostscript from: {url}")
+                        window.append_status(f"Ghostscript not found. Please install manually.")
+                        install_ghostscript_windows(window)
+                        if shutil.which('gswin64c') or shutil.which('gswin32c'):
+                            window.append_status("✔ Ghostscript installed and found in PATH")
+                        else:
+                            window.append_status(f"⚠ Manual installation required. Please install Ghostscript from: {url}")
                 else:
                     window.append_status(f"⚠ Missing {dep}. Please install from: {url}")
             else:

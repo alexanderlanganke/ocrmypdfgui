@@ -62,7 +62,7 @@ def main(args=None):
 
     # Only close the window if there were no errors or warnings
     status_text = window.status.toPlainText().lower()
-    if ("error" not in status_text and "fail" not in status_text and "missing" not in status_text and "manual" not in status_text):
+    if ("error" not in status_text and "fail" not in status_text and "manual" not in status_text):
         window.close()
 
     from ocrmypdfgui.gui import run
