@@ -59,6 +59,11 @@ class BootstrapWindow(QtWidgets.QWidget):
         QtWidgets.QApplication.processEvents()
 
 def check_and_install_python_packages(window):
+    # If running inside a Snap, skip install attempts
+    if os.environ.get('SNAP'):
+        window.append_status("[Snap] All Python dependencies are bundled with the Snap package.")
+        window.set_progress(50)
+        return
     import importlib
     total = len(REQUIRED_PYTHON_PACKAGES)
     for i, pkg in enumerate(REQUIRED_PYTHON_PACKAGES, 1):
@@ -72,6 +77,9 @@ def check_and_install_python_packages(window):
         window.set_progress(int(i / total * 50))  # 0-50% for Python packages
 
 def install_tesseract_windows(window):
+    if os.environ.get('SNAP'):
+        window.append_status("[Snap] Tesseract is bundled with the Snap package.")
+        return
     import shutil
     import subprocess
     window.append_status("Attempting to install Tesseract (all languages) using winget...")
@@ -91,6 +99,9 @@ def install_tesseract_windows(window):
         window.append_status("Please install Tesseract with all languages manually from: https://github.com/UB-Mannheim/tesseract/wiki/Downloads")
 
 def install_ghostscript_windows(window):
+    if os.environ.get('SNAP'):
+        window.append_status("[Snap] Ghostscript is bundled with the Snap package.")
+        return
     import webbrowser
     # Only prompt if not already installed
     if shutil.which('gswin64c') or shutil.which('gswin32c'):
@@ -101,6 +112,10 @@ def install_ghostscript_windows(window):
     webbrowser.open("https://www.ghostscript.com/download/gsdnld.html")
 
 def check_system_dependencies(window):
+    if os.environ.get('SNAP'):
+        window.append_status("[Snap] All system dependencies are bundled with the Snap package.")
+        window.set_progress(100)
+        return
     if platform.system() == 'Windows':
         for i, (dep, url) in enumerate(WINDOWS_DEPENDENCIES.items(), 1):
             if not shutil.which(dep):

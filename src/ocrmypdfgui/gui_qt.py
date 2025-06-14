@@ -441,8 +441,7 @@ class MainWindow(QMainWindow):
         if self.current_file_index >= len(self.files_queue):
             self.start_ocr_action.setEnabled(True)
             self.stop_ocr_action.setEnabled(False)
-            # Wait for all workers to finish before clearing
-            self.cleanup_workers()
+            # No blocking wait here! Just let threads finish naturally.
             return
         file_path = self.files_queue[self.current_file_index]
         if os.path.isdir(file_path):
@@ -457,20 +456,8 @@ class MainWindow(QMainWindow):
         worker.progress.connect(card.set_progress)
         worker.message.connect(lambda text, type, fp=file_path: self.print_to_textview(text, type, fp))
         worker.finished.connect(lambda fp=file_path: self.ocr_finished(fp))
-        worker.finished.connect(lambda w=worker, fp=file_path: self.cleanup_worker(fp, w))
+        worker.finished.connect(lambda fp=file_path: self.workers.pop(fp, None))
         worker.start()
-
-    def cleanup_worker(self, file_path, worker):
-        # Properly wait for thread to finish and delete reference
-        if file_path in self.workers and self.workers[file_path] is worker:
-            worker.wait()
-            del self.workers[file_path]
-
-    def cleanup_workers(self):
-        # Wait for all workers to finish before clearing references
-        for fp, worker in list(self.workers.items()):
-            worker.wait()
-            del self.workers[fp]
 
     def stop_ocr(self):
         # Set the stop_event in ocr.py to interrupt the OCR process
@@ -560,9 +547,3 @@ class DirectoryCard(QFrame):
         self.completed_files = completed
         percent = int((self.completed_files / self.total_files) * 100) if self.total_files else 100
         self.set_progress(percent, self.completed_files, self.total_files)
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    win = MainWindow()
-    win.show()
-    sys.exit(app.exec_())

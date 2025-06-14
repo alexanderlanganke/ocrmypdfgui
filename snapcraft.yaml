@@ -1,29 +1,21 @@
 name: ocrmypdfgui
-title: ocrmypdfgui
 base: core24
-version: '1.0.1' # Matched with setup.py
-
+version: '1.0.1'
+title: ocrmypdfgui
 summary: Hobby Project GUI for the Python Program "OCRmyPDF" by James R. Barlow
+
 description: |
   I use James R. Barlow's OCRmyPDF heavily in my paperless Office and have created this Python Project as a GUI wrapper to run batch jobs on my filesystem. This is strictly a Hobby Project and is not "official". Feel free to use it if you like. Includes full current version of OCRmyPDF as backend. Icons and banner made by Freepik from www.flaticon.com
-icon: gui/ocrmypdfgui.png # Expects prime/gui/ocrmypdfgui.png
+icon: gui/ocrmypdfgui.png
+
 grade: stable
 confinement: strict
 
-# platforms: [ubuntu-24.04-amd64]
-
-environment:
-    TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/5/tessdata
-    GS_LIB: $SNAP/usr/share/ghostscript/10.02.1/Resource/Init
-    GS_FONTPATH: $SNAP/usr/share/ghostscript/9.50/Resource/Font
-    LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu
-    GIO_MODULE_DIR: $SNAP/usr/lib/x86_64-linux-gnu/gio/modules/
-
 apps:
   ocrmypdfgui:
-    command: usr/bin/ocrmypdfgui 
-    desktop: gui/ocrmypdfgui.desktop # Expects prime/gui/ocrmypdfgui.desktop
-    extensions: [ gnome ]
+    command: bin/desktop-launch $SNAP/usr/bin/ocrmypdfgui
+    desktop: gui/ocrmypdfgui.desktop
+    extensions: [gnome]
     plugs:
       - desktop
       - desktop-legacy
@@ -35,115 +27,93 @@ apps:
 parts:
   ocrmypdfgui:
     plugin: python
-    source: . # This includes the 'gui' directory
-
-    build-packages: 
+    source: .
+    build-packages:
       - python3-setuptools
+      - python3-pyqt5
+      - python3-pyqt5.qtsvg
       - python3-pip
       - python3-wheel
-      - findutils # Added for the find command in override-build
       - libqpdf-dev
       - g++
       - pkg-config
-
+      - qtbase5-dev
+      - qt5-qmake
+      - qtchooser
+      - qtbase5-dev-tools
+      - qttools5-dev-tools
+      - libqt5svg5-dev
+      - libglib2.0-bin
+      - libglib2.0-dev
+      - libsm6
+      - libxrender1
+      - libxext6
+      - libjpeg-dev
+      - zlib1g-dev
+      - libtiff-dev
+      - libopenjp2-7-dev
+      - libpng-dev
+      - libfreetype6-dev
+      - liblcms2-dev
+      - libwebp-dev
+      - libharfbuzz-dev
+      - libfribidi-dev
+      - libxcb1-dev
+      - libxkbcommon-x11-0
+      - findutils
     python-packages: []
     stage-packages:
       - ghostscript
       - tesseract-ocr-all
       - libproxy1v5
-      - libqpdf29     
-
+      - libqpdf29
+      - python3-pyqt5
+      - python3-pyqt5.qtsvg
+      - qt5-gtk-platformtheme
+      - libxcb-icccm4
+      - libxcb-image0
+      - libxcb-keysyms1
+      - libxcb-render-util0
+      - libxcb-xinerama0
+      - libxcb-xinput0
+      - libxcb-xfixes0
+      - libxcb-shape0
+      - libxcb-randr0
+      - libxcb-xkb1
+      - libxkbcommon-x11-0
+      - libsm6
+      - libxrender1
+      - libxext6
+      - libjpeg8
+      - zlib1g
+      - libtiff5
+      - libopenjp2-7
+      - libpng16-16
+      - libfreetype6
+      - liblcms2-2
+      - libwebp6
+      - libharfbuzz0b
+      - libfribidi0
     override-build: |
       set -x
-      echo "## Starting override-build for ocrmypdfgui part ##"
-      snapcraftctl build # Restored to allow default python plugin build actions
-
-      echo "--- 진단: 파이썬 인터프리터 확인 중 ---"
-      ls -la $SNAPCRAFT_PART_INSTALL/bin/
-      $SNAPCRAFT_PART_INSTALL/bin/python --version || echo "파이썬 버전 명령 실패"
-      echo "--- 진단: snapcraftctl build 후 설치된 패키지 (강제 stdout): ---"
-      $SNAPCRAFT_PART_INSTALL/bin/python -m pip list 2>&1 || echo "pip list 실패"
-      echo "--- 진단: ocrmypdf 세부 정보 (강제 stdout): ---"
-      $SNAPCRAFT_PART_INSTALL/bin/python -m pip show ocrmypdf 2>&1 || echo "pip show ocrmypdf 실패"
-      echo "--- 진단: pikepdf 세부 정보 (강제 stdout): ---"
-      $SNAPCRAFT_PART_INSTALL/bin/python -m pip show pikepdf 2>&1 || echo "pip show pikepdf 실패"
-
-      # The explicit pip install commands below are removed to rely on snapcraftctl build and setup.py
-      # echo "--- Upgrading pip, setuptools, wheel, setuptools_scm in venv ---"
-      # $SNAPCRAFT_PART_INSTALL/bin/python -m pip install -U pip setuptools wheel setuptools_scm
-      # echo "--- Explicitly running pip install -v . ---"
-      # $SNAPCRAFT_PART_INSTALL/bin/python -m pip install --no-cache-dir --force-reinstall -v .
-      echo "--- Listing content of $SNAPCRAFT_PART_INSTALL (recursively) ---"
-      ls -Rla $SNAPCRAFT_PART_INSTALL/
-      echo "--- Listing content of $SNAPCRAFT_PART_INSTALL/bin/ (specifically) ---"
-      ls -la $SNAPCRAFT_PART_INSTALL/bin/
-      
-      echo "--- Locating ocrmypdfgui script within $SNAPCRAFT_PART_INSTALL ---"
-      SCRIPT_IN_VENV_BIN="$SNAPCRAFT_PART_INSTALL/bin/ocrmypdfgui"
-      FOUND_SCRIPT_PATH=""
-
-      if [ -f "$SCRIPT_IN_VENV_BIN" ]; then
-        echo "Script found at standard venv path: $SCRIPT_IN_VENV_BIN"
-        FOUND_SCRIPT_PATH="$SCRIPT_IN_VENV_BIN"
-      else
-        echo "Script NOT in $SCRIPT_IN_VENV_BIN. Searching elsewhere in $SNAPCRAFT_PART_INSTALL..."
-        # Ensure find exits 0 even if not found, to not stop the script with set -e (if it were set)
-        FOUND_SCRIPT_PATH=$(find "$SNAPCRAFT_PART_INSTALL" -name ocrmypdfgui -type f -print -quit 2>/dev/null) || true
-        if [ -n "$FOUND_SCRIPT_PATH" ]; then
-          echo "Script found at non-standard path: $FOUND_SCRIPT_PATH"
-        else
-          echo "ERROR: ocrmypdfgui script NOT FOUND anywhere within $SNAPCRAFT_PART_INSTALL after 'snapcraftctl build'."
-          echo "Listing contents of $SNAPCRAFT_PART_INSTALL/bin/ for debugging:"
-          ls -la "$SNAPCRAFT_PART_INSTALL/bin/" || true
-        fi
-      fi
-      
-      if [ -n "$FOUND_SCRIPT_PATH" ]; then
-        echo "--- Staging found ocrmypdfgui script to $SNAPCRAFT_PART_INSTALL/usr/bin/ ---"
-        DEST_BIN_IN_PART_INSTALL="$SNAPCRAFT_PART_INSTALL/usr/bin"
-        mkdir -p "$DEST_BIN_IN_PART_INSTALL"
-        cp "$FOUND_SCRIPT_PATH" "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
-        chmod +x "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
-        sed -i '1s|^#!.*python.*$|#!/usr/bin/env python3|' "$DEST_BIN_IN_PART_INSTALL/ocrmypdfgui"
-        echo "Copied $FOUND_SCRIPT_PATH to $DEST_BIN_IN_PART_INSTALL/ocrmypdfgui and updated shebang."
-      else
-        echo "WARNING: No ocrmypdfgui script found to stage into part's /usr/bin."
-      fi
-      echo "## End of override-build for ocrmypdfgui part ##"
-
+      snapcraftctl build
+      # Ensure the PyQt5 platform plugins are staged
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/plugins/platforms
+      cp -r $(find /usr/lib -name "libqxcb.so" | head -n1) $SNAPCRAFT_PART_INSTALL/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/plugins/platforms/ || true
+      # Copy .desktop and icon
+      mkdir -p $SNAPCRAFT_PART_INSTALL/gui
+      cp gui/ocrmypdfgui.desktop $SNAPCRAFT_PART_INSTALL/gui/
+      cp gui/ocrmypdfgui.png $SNAPCRAFT_PART_INSTALL/gui/
+      # Ensure main entry is in /usr/bin
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/bin
+      cp $(find $SNAPCRAFT_PART_INSTALL -name ocrmypdfgui | head -n1) $SNAPCRAFT_PART_INSTALL/usr/bin/ocrmypdfgui || true
     override-prime: |
-      set -x 
-      snapcraftctl prime 
-      
-      echo "--- Manually staging .desktop file and icon for priming ---"
-      # $SNAPCRAFT_PART_SRC should point to the source files of the part within the build.
-      ASSETS_SOURCE_DIR="$SNAPCRAFT_PART_SRC/gui" 
-
-      DEST_GUI_DIR_IN_PRIME="$SNAPCRAFT_PRIME/gui"
-      
-      mkdir -p "$DEST_GUI_DIR_IN_PRIME"
-      
-      if [ -d "$ASSETS_SOURCE_DIR" ]; then
-        if [ -f "$ASSETS_SOURCE_DIR/ocrmypdfgui.desktop" ]; then
-          cp "$ASSETS_SOURCE_DIR/ocrmypdfgui.desktop" "$DEST_GUI_DIR_IN_PRIME/"
-          echo "Copied ocrmypdfgui.desktop to $DEST_GUI_DIR_IN_PRIME/"
-        else
-          echo "ERROR from override-prime: $ASSETS_SOURCE_DIR/ocrmypdfgui.desktop not found."
-        fi
-        
-        if [ -f "$ASSETS_SOURCE_DIR/ocrmypdfgui.png" ]; then
-          cp "$ASSETS_SOURCE_DIR/ocrmypdfgui.png" "$DEST_GUI_DIR_IN_PRIME/"
-          echo "Copied ocrmypdfgui.png to $DEST_GUI_DIR_IN_PRIME/"
-        else
-          echo "ERROR from override-prime: $ASSETS_SOURCE_DIR/ocrmypdfgui.png not found."
-        fi
-      else
-        echo "ERROR from override-prime: Assets source directory $ASSETS_SOURCE_DIR not found."
-      fi
-
-
-      echo "--- Listing $DEST_GUI_DIR_IN_PRIME (for .desktop and .icon) ---"
-      ls -la "$DEST_GUI_DIR_IN_PRIME" || true
-      echo "--- Listing $SNAPCRAFT_PRIME/usr/bin (for command) ---"
-      ls -la $SNAPCRAFT_PRIME/usr/bin || true
-      echo "--- End of override-prime for ocrmypdfgui part ---"
+      set -x
+      snapcraftctl prime
+      # Copy .desktop and icon to prime
+      mkdir -p $SNAPCRAFT_PRIME/gui
+      cp gui/ocrmypdfgui.desktop $SNAPCRAFT_PRIME/gui/
+      cp gui/ocrmypdfgui.png $SNAPCRAFT_PRIME/gui/
+      # Ensure /usr/bin/ocrmypdfgui is present
+      mkdir -p $SNAPCRAFT_PRIME/usr/bin
+      cp $(find $SNAPCRAFT_PRIME -name ocrmypdfgui | head -n1) $SNAPCRAFT_PRIME/usr/bin/ocrmypdfgui || true
